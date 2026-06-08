@@ -28,7 +28,7 @@ This project focuses on solving real-world agricultural challenges in Bangladesh
 
 | Project Title | Smart Farmer Assistant: AI-Based Agriculture Support System |
 
-| Team Leader | Sakib Foysal Ejardder |
+| Team Leader | Sakib Foysal Ejarder |
 
 | Team Leader ID | 11220320948 |
 
