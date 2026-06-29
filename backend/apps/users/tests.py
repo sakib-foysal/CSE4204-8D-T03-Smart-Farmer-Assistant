@@ -1,3 +1,122 @@
-from django.test import TestCase
+from rest_framework.test import APITestCase
 
-# Create your tests here.
+from apps.chatbot.models import ChatHistory
+from apps.weather.models import WeatherData
+from apps.users.models import User, RevokedToken
+
+
+class AuthenticationAPITests(APITestCase):
+
+	def setUp(self):
+		self.register_payload = {
+			"username": "farmer1",
+			"email": "farmer1@example.com",
+			"password": "StrongPass123",
+			"phone": "+8801712345678",
+			"role": "farmer",
+		}
+		self.user = User.objects.create_user(
+			username="demo",
+			email="demo@example.com",
+			password="StrongPass123",
+			phone="+8801812345678",
+			role="farmer",
+		)
+
+	def test_register_returns_token(self):
+		response = self.client.post("/api/register/", self.register_payload, format="json")
+		self.assertEqual(response.status_code, 201)
+		self.assertIn("access_token", response.data)
+		self.assertTrue(User.objects.filter(username="farmer1").exists())
+
+	def test_login_returns_token(self):
+		response = self.client.post(
+			"/api/login/",
+			{"identifier": "demo", "password": "StrongPass123"},
+			format="json",
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertIn("access_token", response.data)
+
+	def test_profile_requires_token(self):
+		response = self.client.get("/api/profile/")
+		self.assertEqual(response.status_code, 403)
+
+	def test_profile_get_and_update(self):
+		login = self.client.post(
+			"/api/login/",
+			{"identifier": "demo", "password": "StrongPass123"},
+			format="json",
+		)
+		token = login.data["access_token"]
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+		profile = self.client.get("/api/profile/")
+		self.assertEqual(profile.status_code, 200)
+
+		update = self.client.put(
+			"/api/profile/",
+			{"first_name": "Updated"},
+			format="json",
+		)
+		self.assertEqual(update.status_code, 200)
+		self.user.refresh_from_db()
+		self.assertEqual(self.user.first_name, "Updated")
+
+	def test_logout_revokes_token(self):
+		login = self.client.post(
+			"/api/login/",
+			{"identifier": "demo", "password": "StrongPass123"},
+			format="json",
+		)
+		token = login.data["access_token"]
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+		response = self.client.post("/api/logout/", {}, format="json")
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(RevokedToken.objects.count(), 1)
+
+
+class ProjectApiSmokeTests(APITestCase):
+
+	def setUp(self):
+		self.user = User.objects.create_user(
+			username="projectuser",
+			email="project@example.com",
+			password="StrongPass123",
+			phone="+8801912345678",
+			role="farmer",
+		)
+		login = self.client.post(
+			"/api/login/",
+			{"identifier": "projectuser", "password": "StrongPass123"},
+			format="json",
+		)
+		self.token = login.data["access_token"]
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+	def test_chat_history_create_and_list(self):
+		create = self.client.post(
+			"/api/chat-history/",
+			{"question": "How to protect crops?", "response": "Use proper irrigation."},
+			format="json",
+		)
+		self.assertEqual(create.status_code, 201)
+		self.assertEqual(ChatHistory.objects.count(), 1)
+
+		list_response = self.client.get("/api/chat-history/")
+		self.assertEqual(list_response.status_code, 200)
+		self.assertEqual(len(list_response.data), 1)
+
+	def test_weather_data_create_and_list(self):
+		create = self.client.post(
+			"/api/weather-data/",
+			{"temperature": 28.5, "humidity": 70.0, "rainfall": 12.3, "flood_risk": "low"},
+			format="json",
+		)
+		self.assertEqual(create.status_code, 201)
+		self.assertEqual(WeatherData.objects.count(), 1)
+
+		list_response = self.client.get("/api/weather-data/")
+		self.assertEqual(list_response.status_code, 200)
+		self.assertEqual(len(list_response.data), 1)
