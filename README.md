@@ -20,10 +20,10 @@ This project focuses on solving real-world agricultural challenges in Bangladesh
 
 | Name | Student ID | Role |
 |--------|------------|------|
-| Sakib Foysal Ejarder | 11220320948 | Team Leader / Database /  ML Engineer / Team management|
-| Md. Noyon Sheikh | 11220320946 | AI Enginee |
-| Sayed Tauhidul Islam | 11220320950 | Backend Developer |
-| Sayed Akib Osman | 11220320974 |  Frontend Developer |
+| Sakib Foysal Ejarder | 11220320948 | Team Leader / Backend Developer /  Team management |
+| Md. Noyon Sheikh | 11220320946 |Frontend Developer |
+| Sayed Tauhidul Islam | 11220320950 | AI & ML Engineer |
+| Sayed Akib Osman | 11220320974 |  Database / QA |
 
 ---
 
