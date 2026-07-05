@@ -1,16 +1,25 @@
+# Python
 __pycache__/
 *.py[cod]
-*.sqlite3
-db.sqlite3
-venv/
-.venv/
-env/
-.env
+*.pyo
+*.pyd
+*.so
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-.coverage
-htmlcov/
-*.log
-staticfiles/
+
+# Virtual environment
+venv/
+.venv/
+
+# Django / local data
+.env
+db.sqlite3
 media/
+staticfiles/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
