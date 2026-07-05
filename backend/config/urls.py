@@ -18,8 +18,13 @@ def home(request):
         }
     )
 
+
+def health_check(request):
+    return JsonResponse({"message": "Backend is running."})
+
 urlpatterns = [
     path('', home, name='home'),
+    path('api/health/', health_check, name='health_check'),
     path('api/', include('apps.users.urls')),
     path('api/chat-history/', include('apps.chatbot.urls')),
     path('api/disease-history/', include('apps.disease_detection.urls')),
