@@ -1,4 +1,5 @@
 from rest_framework.test import APITestCase
+import json
 
 from apps.chatbot.models import ChatHistory
 from apps.weather.models import WeatherData
@@ -120,3 +121,9 @@ class ProjectApiSmokeTests(APITestCase):
 		list_response = self.client.get("/api/weather-data/")
 		self.assertEqual(list_response.status_code, 200)
 		self.assertEqual(len(list_response.data), 1)
+
+	def test_health_endpoint(self):
+		response = self.client.get("/api/health/")
+		self.assertEqual(response.status_code, 200)
+		payload = json.loads(response.content)
+		self.assertEqual(payload["status"], "ok")
