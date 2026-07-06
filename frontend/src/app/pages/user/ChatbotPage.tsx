@@ -18,6 +18,36 @@ const greeting: Message = {
   content: 'Hello! I am your Smart Farmer Assistant. Ask me anything about farming, crops, fertilizers, or pest control.',
 };
 
+function buildAssistantResponse(question: string) {
+  const normalized = question.toLowerCase();
+
+  if (/ধান|rice|paddy/.test(normalized)) {
+    return 'ধানের জন্য জমির পানি, সার, আর পোকা নিয়ন্ত্রণ একসাথে দেখুন। ইউরিয়া ৩ কিস্তিতে দিন, আর পাতা হলুদ হলে মাটি ও সারের ভারসাম্য পরীক্ষা করুন।';
+  }
+
+  if (/tomato|blight|leaf|পাতা|টমেটো/.test(normalized)) {
+    return 'টমেটো ব্লাইট হলে আক্রান্ত পাতা সরিয়ে ফেলুন, গাছের মাঝে যথেষ্ট ফাঁকা রাখুন, এবং ভোরে বা সন্ধ্যায় কপার-ভিত্তিক ফাঙ্গিসাইড ব্যবহার করুন।';
+  }
+
+  if (/fertilizer|fertiliser|সার|urea|tsp|mop|npk/.test(normalized)) {
+    return 'সারের আগে মাটি পরীক্ষা করুন। সাধারণভাবে ইউরিয়া ৩ ভাগে, TSP বপনের সময়, আর MOP দুই ভাগে দিলে পুষ্টির ক্ষয় কমে।';
+  }
+
+  if (/weather|rain|flood|storm|বৃষ্টি|বন্যা|আবহাওয়া/.test(normalized)) {
+    return 'আবহাওয়া বা বন্যার ঝুঁকি থাকলে সেচ কমান, নালা পরিষ্কার রাখুন, এবং খোলা মাঠের কাজ পরিকল্পনা করার আগে weather page দেখুন।';
+  }
+
+  if (/pest|insect|bug|aphid|mites|পোকা/.test(normalized)) {
+    return 'পোকা দমনে প্রথমে আক্রান্ত অংশ কমান, আগাছা পরিষ্কার রাখুন, আর সম্ভব হলে জৈব নিয়ন্ত্রণ বা নিম-ভিত্তিক স্প্রে ব্যবহার করুন।';
+  }
+
+  if (/hello|hi|hey|হ্যালো|হাই|সালাম|assalam/.test(normalized)) {
+    return 'Hello! Tell me the crop name, symptom, fertilizer need, or weather concern, and I will suggest the next step.';
+  }
+
+  return 'I can help with crop disease symptoms, fertilizer guidance, weather risk, and pest control. Mention the crop and the problem you are seeing.';
+}
+
 export default function ChatbotPage() {
   const { t } = useLanguage();
   const { token } = useAuth();
@@ -47,25 +77,20 @@ export default function ChatbotPage() {
     if (!inputText.trim()) return;
 
     const userMessage: Message = { role: 'user', content: inputText };
+    const assistantResponse = buildAssistantResponse(inputText.trim());
+
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
-
-    const responses = [
-      'For rice cultivation, apply urea fertilizer in three split doses: planting, tillering, and flowering stage.',
-      'To control tomato blight, use copper-based fungicides and maintain proper plant spacing for air circulation.',
-      'The best time to plant wheat in Bangladesh is November to December. Keep soil moisture balanced.',
-    ];
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
 
     try {
       if (token) {
         await api.createChatHistory(token, {
           question: userMessage.content,
-          response: randomResponse,
+          response: assistantResponse,
         });
       }
-      setMessages(prev => [...prev, { role: 'assistant', content: randomResponse }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantResponse }]);
     } finally {
       setIsTyping(false);
     }
