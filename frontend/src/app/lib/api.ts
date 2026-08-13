@@ -11,6 +11,24 @@ export interface UserProfile {
   created_at: string;
 }
 
+<<<<<<< HEAD
+=======
+export interface AdminUser extends UserProfile {
+  is_active: boolean;
+}
+
+export interface AdminDashboardData {
+  stats: {
+    total_users: number;
+    total_detections: number;
+    total_chats: number;
+    active_today: number;
+  };
+  activity: Array<{ date: string; name: string; users: number; detections: number; chats: number }>;
+  recent_users: AdminUser[];
+}
+
+>>>>>>> ai-integration
 export interface AuthResponse {
   message: string;
   user: UserProfile;
@@ -52,6 +70,17 @@ export interface ChatHistory {
   date: string;
 }
 
+<<<<<<< HEAD
+=======
+export interface DiseaseAnalysis extends DiseaseHistory {
+  disclaimer: string;
+}
+
+export interface SFAIChatResponse extends ChatHistory {
+  model: string;
+}
+
+>>>>>>> ai-integration
 export interface FertilizerRecommendation {
   id: string;
   disease: string;
@@ -60,6 +89,18 @@ export interface FertilizerRecommendation {
   date: string;
 }
 
+<<<<<<< HEAD
+=======
+export interface FertilizerPlan {
+  id: string;
+  crop: string;
+  fertilizers: Array<{ name: string; amount: string; timing: string }>;
+  tips: string[];
+  disclaimer: string;
+  date: string;
+}
+
+>>>>>>> ai-integration
 type ApiOptions = RequestInit & {
   token?: string | null;
 };
@@ -172,6 +213,36 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
+<<<<<<< HEAD
+=======
+  analyzeDisease: (token: string, image_data: string, crop_hint = "") =>
+    apiRequest<DiseaseAnalysis>("/api/disease-history/analyze/", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ image_data, crop_hint }),
+    }),
+  askSFAI: (token: string, question: string) =>
+    apiRequest<SFAIChatResponse>("/api/chat-history/ask/", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ question }),
+    }),
+  adminUsers: (token: string) =>
+    apiRequest<AdminUser[]>("/api/admin/users/", { token }),
+  adminDashboard: (token: string) =>
+    apiRequest<AdminDashboardData>("/api/admin/dashboard/", { token }),
+  updateAdminUser: (token: string, id: string, payload: Partial<AdminUser>) =>
+    apiRequest<AdminUser>(`/api/admin/users/${id}/`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(payload),
+    }),
+  deleteAdminUser: (token: string, id: string) =>
+    apiRequest<void>(`/api/admin/users/${id}/`, {
+      method: "DELETE",
+      token,
+    }),
+>>>>>>> ai-integration
   fertilizerRecommendations: (token: string) =>
     apiRequest<FertilizerRecommendation[]>("/api/fertilizer-recommendations/", {
       token,
@@ -185,4 +256,13 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
+<<<<<<< HEAD
+=======
+  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "") =>
+    apiRequest<FertilizerPlan>("/api/fertilizer-recommendations/generate/", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ crop_name, farm_context }),
+    }),
+>>>>>>> ai-integration
 };

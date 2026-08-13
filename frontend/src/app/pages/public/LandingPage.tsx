@@ -168,7 +168,11 @@ export default function LandingPage() {
               extension officers remains limited in rural areas.
             </p>
             <p className="text-lg text-gray-600">
+<<<<<<< HEAD
               Our platform integrates AI image classification, a Gemini AI-powered chatbot, real-time weather forecasting, flood alerts, 
+=======
+              Our platform integrates AI image classification, an SF AI-powered chatbot, real-time weather forecasting, flood alerts, 
+>>>>>>> ai-integration
               live market prices, and intelligent fertilizer recommendations into a single responsive platform accessible from any 
               smartphone or web browser.
             </p>

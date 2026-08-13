@@ -84,7 +84,11 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
           <p>© {currentYear} {t('appTitle')}. {t('footerRights')}.</p>
           <p className="mt-2 text-xs text-gray-500">
+<<<<<<< HEAD
             CSE4204-8D-T03 - Software Engineering Project
+=======
+            CSE4204-8D-T03 - Smart Farmar AI Assistant Project
+>>>>>>> ai-integration
           </p>
         </div>
       </div>
