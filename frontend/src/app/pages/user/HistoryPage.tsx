@@ -52,12 +52,12 @@ export default function HistoryPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>{t('diseaseHistory')}</CardTitle>
-                  <CardDescription>Your past crop disease detections</CardDescription>
+                  <CardDescription>{t('diseaseHistoryDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {loading ? (
-                      <p className="text-gray-500">Loading disease history...</p>
+                      <p className="text-gray-500">{t('loadingDiseaseHistory')}</p>
                     ) : diseaseHistory.length > 0 ? diseaseHistory.map((item) => (
                       <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
                         <img
@@ -84,7 +84,7 @@ export default function HistoryPage() {
                         </div>
                       </div>
                     )) : (
-                      <p className="text-gray-500">No disease detection history found.</p>
+                      <p className="text-gray-500">{t('noDiseaseHistory')}</p>
                     )}
                   </div>
                 </CardContent>
@@ -95,12 +95,12 @@ export default function HistoryPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>{t('chatHistoryTitle')}</CardTitle>
-                  <CardDescription>Your conversations with AI assistant</CardDescription>
+                  <CardDescription>{t('chatHistoryDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {loading ? (
-                      <p className="text-gray-500">Loading chat history...</p>
+                      <p className="text-gray-500">{t('loadingChatHistory')}</p>
                     ) : chatHistory.length > 0 ? chatHistory.map((item) => (
                       <div key={item.id} className="flex items-start gap-3 p-4 border rounded-lg hover:bg-gray-50">
                         <div className="bg-green-100 p-2 rounded-full">
@@ -121,7 +121,7 @@ export default function HistoryPage() {
                         </div>
                       </div>
                     )) : (
-                      <p className="text-gray-500">No chat history found.</p>
+                      <p className="text-gray-500">{t('noChatHistory')}</p>
                     )}
                   </div>
                 </CardContent>

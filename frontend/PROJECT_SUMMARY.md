@@ -155,11 +155,7 @@ src/
 Based on the SRS document, future versions could include:
 - Real backend integration with Django REST API
 - TensorFlow disease detection model integration
-<<<<<<< HEAD
-- Google Gemini AI chatbot integration
-=======
 - SF AI chatbot integration
->>>>>>> ai-integration
 - OpenWeatherMap API integration
 - PostgreSQL database connection
 - JWT authentication

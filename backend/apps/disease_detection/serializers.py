@@ -1,8 +1,5 @@
 from rest_framework import serializers
-<<<<<<< HEAD
-=======
 import base64
->>>>>>> ai-integration
 
 from apps.disease_detection.models import DiseaseHistory
 
@@ -11,15 +8,13 @@ class DiseaseHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = DiseaseHistory
         fields = ["id", "image_url", "prediction", "confidence", "treatment", "date"]
-<<<<<<< HEAD
-        read_only_fields = ["id", "date"]
-=======
         read_only_fields = ["id", "date"]
 
 
 class DiseaseAnalyzeSerializer(serializers.Serializer):
     image_data = serializers.CharField(max_length=3_000_000)
     crop_hint = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    language = serializers.ChoiceField(choices=["en", "bn"], required=False, default="en")
 
     def validate_image_data(self, value):
         if not value.startswith("data:image/") or ";base64," not in value:
@@ -37,4 +32,3 @@ class DiseaseAnalyzeSerializer(serializers.Serializer):
         self.context["mime_type"] = mime_type
         self.context["image_base64"] = encoded
         return value
->>>>>>> ai-integration

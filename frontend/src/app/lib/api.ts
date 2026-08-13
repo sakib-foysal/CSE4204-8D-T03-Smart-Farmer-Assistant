@@ -11,8 +11,6 @@ export interface UserProfile {
   created_at: string;
 }
 
-<<<<<<< HEAD
-=======
 export interface AdminUser extends UserProfile {
   is_active: boolean;
 }
@@ -28,7 +26,6 @@ export interface AdminDashboardData {
   recent_users: AdminUser[];
 }
 
->>>>>>> ai-integration
 export interface AuthResponse {
   message: string;
   user: UserProfile;
@@ -58,7 +55,7 @@ export interface DiseaseHistory {
   id: string;
   image_url: string;
   prediction: string;
-  confidence: string;
+  confidence: string | number;
   treatment: string;
   date: string;
 }
@@ -70,9 +67,46 @@ export interface ChatHistory {
   date: string;
 }
 
-<<<<<<< HEAD
-=======
+export interface WeatherForecastDay {
+  date: string;
+  temperature_max: number;
+  temperature_min: number;
+  rainfall: number;
+  rain_probability: number;
+  wind_speed: number;
+  weather_code: number;
+  flood_risk: "low" | "medium" | "high";
+}
+
+export interface WeatherAlert {
+  type: "flood" | "rain" | "lightning" | "wind" | "heat";
+  severity: "medium" | "high";
+  message: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  do: string[];
+  avoid: string[];
+}
+
+export interface HourlyRainForecast {
+  date: string;
+  time: string;
+  rain_probability: number;
+  rainfall: number;
+}
+
+export interface LiveWeatherForecast {
+  location: string;
+  updated_at: string;
+  current: { temperature: number; humidity: number; rainfall: number; wind_speed: number; weather_code: number };
+  forecast: WeatherForecastDay[];
+  hourly: HourlyRainForecast[];
+  alerts: WeatherAlert[];
+}
+
 export interface DiseaseAnalysis extends DiseaseHistory {
+  crop: string;
   disclaimer: string;
 }
 
@@ -80,7 +114,6 @@ export interface SFAIChatResponse extends ChatHistory {
   model: string;
 }
 
->>>>>>> ai-integration
 export interface FertilizerRecommendation {
   id: string;
   disease: string;
@@ -89,8 +122,6 @@ export interface FertilizerRecommendation {
   date: string;
 }
 
-<<<<<<< HEAD
-=======
 export interface FertilizerPlan {
   id: string;
   crop: string;
@@ -100,7 +131,6 @@ export interface FertilizerPlan {
   date: string;
 }
 
->>>>>>> ai-integration
 type ApiOptions = RequestInit & {
   token?: string | null;
 };
@@ -213,13 +243,13 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
-<<<<<<< HEAD
-=======
-  analyzeDisease: (token: string, image_data: string, crop_hint = "") =>
+  weatherForecast: (token: string, language: "en" | "bn") =>
+    apiRequest<LiveWeatherForecast>(`/api/weather-data/forecast/?lang=${language}`, { token }),
+  analyzeDisease: (token: string, image_data: string, crop_hint = "", language: "en" | "bn" = "en") =>
     apiRequest<DiseaseAnalysis>("/api/disease-history/analyze/", {
       method: "POST",
       token,
-      body: JSON.stringify({ image_data, crop_hint }),
+      body: JSON.stringify({ image_data, crop_hint, language }),
     }),
   askSFAI: (token: string, question: string) =>
     apiRequest<SFAIChatResponse>("/api/chat-history/ask/", {
@@ -242,7 +272,6 @@ export const api = {
       method: "DELETE",
       token,
     }),
->>>>>>> ai-integration
   fertilizerRecommendations: (token: string) =>
     apiRequest<FertilizerRecommendation[]>("/api/fertilizer-recommendations/", {
       token,
@@ -256,13 +285,10 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
-<<<<<<< HEAD
-=======
-  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "") =>
+  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "", language: "en" | "bn" = "en") =>
     apiRequest<FertilizerPlan>("/api/fertilizer-recommendations/generate/", {
       method: "POST",
       token,
-      body: JSON.stringify({ crop_name, farm_context }),
+      body: JSON.stringify({ crop_name, farm_context, language }),
     }),
->>>>>>> ai-integration
 };

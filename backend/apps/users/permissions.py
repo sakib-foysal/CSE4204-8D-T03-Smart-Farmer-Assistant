@@ -10,9 +10,6 @@ class IsJWTAuthenticated(BasePermission):
         authorization = request.headers.get("Authorization", "")
         if not authorization.startswith("Bearer "):
             raise NotAuthenticated(self.message)
-<<<<<<< HEAD
-        return bool(request.user and request.user.is_authenticated)
-=======
         return bool(request.user and request.user.is_authenticated)
 
 
@@ -23,4 +20,3 @@ class IsAdminUser(IsJWTAuthenticated):
 
     def has_permission(self, request, view):
         return super().has_permission(request, view) and request.user.role == "admin"
->>>>>>> ai-integration

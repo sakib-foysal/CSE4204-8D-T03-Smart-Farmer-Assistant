@@ -1,11 +1,7 @@
 from django.utils import timezone
-<<<<<<< HEAD
-from rest_framework import status
-=======
 from datetime import timedelta
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
->>>>>>> ai-integration
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,14 +9,6 @@ from rest_framework.views import APIView
 from apps.users.authentication import JWTAuthentication
 from apps.users.jwt import encode_token
 from apps.users.models import RevokedToken
-<<<<<<< HEAD
-from apps.users.permissions import IsJWTAuthenticated
-from apps.users.serializers import (
-    UserLoginSerializer,
-    UserProfileSerializer,
-    UserRegistrationSerializer,
-)
-=======
 from apps.users.permissions import IsAdminUser, IsJWTAuthenticated
 from apps.users.serializers import (
     UserLoginSerializer,
@@ -34,7 +22,17 @@ from apps.disease_detection.models import DiseaseHistory
 
 
 User = get_user_model()
->>>>>>> ai-integration
+
+
+def revoke_token(token):
+    """Add a valid JWT to the deny-list until its natural expiry."""
+    expires_at = timezone.datetime.fromtimestamp(
+        token["exp"], tz=timezone.get_current_timezone()
+    )
+    RevokedToken.objects.get_or_create(
+        jti=token["jti"],
+        defaults={"expires_at": expires_at},
+    )
 
 
 class RegisterAPIView(APIView):
@@ -64,11 +62,8 @@ class LoginAPIView(APIView):
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-<<<<<<< HEAD
-=======
         user.last_login = timezone.now()
         user.save(update_fields=["last_login"])
->>>>>>> ai-integration
         token_data = encode_token(user)
 
         return Response(
@@ -94,13 +89,7 @@ class LogoutAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        expires_at = timezone.datetime.fromtimestamp(
-            token["exp"], tz=timezone.get_current_timezone()
-        )
-        RevokedToken.objects.get_or_create(
-            jti=token["jti"],
-            defaults={"expires_at": expires_at},
-        )
+        revoke_token(token)
 
         return Response(
             {"message": "Logout successful."},
@@ -131,8 +120,6 @@ class ProfileAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-<<<<<<< HEAD
-=======
 
 
 class AdminUserListAPIView(ListAPIView):
@@ -200,4 +187,3 @@ class AdminDashboardAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
->>>>>>> ai-integration

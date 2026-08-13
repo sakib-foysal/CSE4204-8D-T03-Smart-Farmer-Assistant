@@ -19,11 +19,8 @@ class FertilizerRecommendation(models.Model):
         DiseaseHistory,
         on_delete=models.CASCADE,
         related_name="fertilizer_recommendations"
-<<<<<<< HEAD
-=======
         , null=True,
         blank=True,
->>>>>>> ai-integration
     )
 
     user = models.ForeignKey(
@@ -47,8 +44,4 @@ class FertilizerRecommendation(models.Model):
         ordering = ["-date"]
 
     def __str__(self):
-<<<<<<< HEAD
         return f"FertilizerRecommendation {self.crop_name}"
-=======
-        return f"FertilizerRecommendation {self.crop_name}"
->>>>>>> ai-integration

@@ -23,7 +23,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!email.trim() || !password.trim()) {
-      setError('Email/username and password are required.');
+      setError(t('requiredLogin'));
       return;
     }
 
@@ -32,10 +32,10 @@ export default function LoginPage() {
 
     try {
       const user = await login(email.trim(), password);
-      toast.success('Login successful.');
+      toast.success(t('loginSuccessful'));
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+      setError(err instanceof Error ? err.message : t('loginFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -61,7 +61,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="text"
-                  placeholder="farmer@example.com or username"
+                  placeholder={t('email')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -98,7 +98,7 @@ export default function LoginPage() {
               </div>
               
               <p className="text-xs text-gray-500 text-center">
-                Use an account created in your backend database.
+                {t('backendAccount')}
               </p>
             </form>
           </CardContent>

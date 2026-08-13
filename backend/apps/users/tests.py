@@ -77,8 +77,6 @@ class AuthenticationAPITests(APITestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(RevokedToken.objects.count(), 1)
 
-<<<<<<< HEAD
-=======
 	def test_admin_can_list_update_and_delete_database_users(self):
 		admin = User.objects.create_user(
 			username="adminuser",
@@ -127,7 +125,6 @@ class AuthenticationAPITests(APITestCase):
 		self.assertEqual(response.status_code, 403)
 		self.assertEqual(self.client.get("/api/admin/dashboard/").status_code, 403)
 
->>>>>>> ai-integration
 
 class ProjectApiSmokeTests(APITestCase):
 

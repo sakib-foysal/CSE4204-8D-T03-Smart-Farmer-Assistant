@@ -5,10 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-<<<<<<< HEAD
-=======
     "predev": "node scripts/start-backend.cjs",
->>>>>>> ai-integration
     "dev": "vite"
   },
   "dependencies": {

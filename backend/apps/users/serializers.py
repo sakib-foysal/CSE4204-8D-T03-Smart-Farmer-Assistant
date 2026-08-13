@@ -73,9 +73,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "role",
             "created_at",
         ]
-<<<<<<< HEAD
-        read_only_fields = ["id", "username", "created_at"]
-=======
         read_only_fields = ["id", "username", "created_at"]
 
 
@@ -116,4 +113,3 @@ class AdminUserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
->>>>>>> ai-integration

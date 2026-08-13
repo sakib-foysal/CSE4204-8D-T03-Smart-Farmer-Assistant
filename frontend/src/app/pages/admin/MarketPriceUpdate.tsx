@@ -35,11 +35,11 @@ export default function MarketPriceUpdate() {
   const handleAddPrice = async () => {
     if (!token) return;
     if (!newPrice.crop_name.trim() || !newPrice.price || !newPrice.region) {
-      toast.error('Please fill all fields');
+      toast.error(t('requiredFields'));
       return;
     }
     if (Number(newPrice.price) < 0) {
-      toast.error('Price cannot be negative');
+      toast.error(t('price'));
       return;
     }
 
@@ -54,9 +54,9 @@ export default function MarketPriceUpdate() {
       setMarketPrices((prev) => [saved, ...prev]);
       setNewPrice({ crop_name: '', price: '', unit: 'kg', region: '' });
       setIsAdding(false);
-      toast.success('Market price added successfully!');
+      toast.success(t('save'));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not add market price.');
+      toast.error(err instanceof Error ? err.message : t('noData'));
     } finally {
       setSaving(false);
     }
@@ -68,14 +68,14 @@ export default function MarketPriceUpdate() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('marketPriceUpdate')}</h1>
-            <p className="text-gray-600">Update market prices for farmers</p>
+            <p className="text-gray-600">{t('marketPriceUpdate')}</p>
           </div>
 
           {isAdding && (
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Add New Price</CardTitle>
-                <CardDescription>Enter crop market price information</CardDescription>
+                <CardTitle>{t('price')}</CardTitle>
+                <CardDescription>{t('marketPriceUpdate')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -106,9 +106,9 @@ export default function MarketPriceUpdate() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kg">per kg</SelectItem>
-                        <SelectItem value="ton">per ton</SelectItem>
-                        <SelectItem value="piece">per piece</SelectItem>
+                        <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="ton">ton</SelectItem>
+                        <SelectItem value="piece">piece</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -150,13 +150,13 @@ export default function MarketPriceUpdate() {
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Current Market Prices</CardTitle>
-                  <CardDescription>Manage all crop prices across regions</CardDescription>
+                  <CardTitle>{t('marketPrices')}</CardTitle>
+                  <CardDescription>{t('marketPriceUpdate')}</CardDescription>
                 </div>
                 {!isAdding && (
                   <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-700">
                     <Plus className="size-4 mr-2" />
-                    Add Price
+                    {t('price')}
                   </Button>
                 )}
               </div>
@@ -171,7 +171,7 @@ export default function MarketPriceUpdate() {
                       <TableHead>{t('price')}</TableHead>
                       <TableHead>{t('unit')}</TableHead>
                       <TableHead>{t('region')}</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -180,7 +180,7 @@ export default function MarketPriceUpdate() {
                         <TableCell className="font-medium">#{price.id.slice(0, 8)}</TableCell>
                         <TableCell className="font-medium">{price.crop_name}</TableCell>
                         <TableCell className="font-bold text-green-600">৳{Number(price.price).toFixed(2)}</TableCell>
-                        <TableCell>per {price.unit}</TableCell>
+                        <TableCell>{price.unit}</TableCell>
                         <TableCell>{price.region}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">

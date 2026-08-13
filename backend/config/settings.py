@@ -24,10 +24,7 @@ INSTALLED_APPS = [
 
     # Third Party Apps
     "rest_framework",
-<<<<<<< HEAD
-=======
     "corsheaders",
->>>>>>> ai-integration
 
     # Local Apps
     "apps.chatbot.apps.ChatbotConfig",
@@ -43,10 +40,7 @@ AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-<<<<<<< HEAD
-=======
     "corsheaders.middleware.CorsMiddleware",
->>>>>>> ai-integration
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -129,11 +123,8 @@ REST_FRAMEWORK = {
     ),
     "EXCEPTION_HANDLER": "apps.users.exceptions.custom_exception_handler",
 }
-<<<<<<< HEAD
-=======
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "25"))
->>>>>>> ai-integration
 
