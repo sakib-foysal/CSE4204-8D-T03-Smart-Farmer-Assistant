@@ -14,6 +14,7 @@ class DiseaseHistorySerializer(serializers.ModelSerializer):
 class DiseaseAnalyzeSerializer(serializers.Serializer):
     image_data = serializers.CharField(max_length=3_000_000)
     crop_hint = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    language = serializers.ChoiceField(choices=["en", "bn"], required=False, default="en")
 
     def validate_image_data(self, value):
         if not value.startswith("data:image/") or ";base64," not in value:

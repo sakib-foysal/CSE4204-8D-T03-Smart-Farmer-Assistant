@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Header() {
-  const { t, toggleLanguage, language } = useLanguage();
+  const { t, toggleLanguage } = useLanguage();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,7 +69,7 @@ export default function Header() {
               className="flex items-center gap-2"
             >
               <Globe className="size-4" />
-              {language === 'en' ? 'বাংলা' : 'English'}
+              {t('languageName')}
             </Button>
             
             {!isAuthenticated ? (
@@ -152,7 +152,7 @@ export default function Header() {
                 className="w-full flex items-center justify-center gap-2"
               >
                 <Globe className="size-4" />
-                {language === 'en' ? 'বাংলা' : 'English'}
+                {t('languageName')}
               </Button>
             </nav>
           </div>

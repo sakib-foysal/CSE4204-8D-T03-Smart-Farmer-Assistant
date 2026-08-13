@@ -24,6 +24,17 @@ from apps.disease_detection.models import DiseaseHistory
 User = get_user_model()
 
 
+def revoke_token(token):
+    """Add a valid JWT to the deny-list until its natural expiry."""
+    expires_at = timezone.datetime.fromtimestamp(
+        token["exp"], tz=timezone.get_current_timezone()
+    )
+    RevokedToken.objects.get_or_create(
+        jti=token["jti"],
+        defaults={"expires_at": expires_at},
+    )
+
+
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -78,13 +89,7 @@ class LogoutAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        expires_at = timezone.datetime.fromtimestamp(
-            token["exp"], tz=timezone.get_current_timezone()
-        )
-        RevokedToken.objects.get_or_create(
-            jti=token["jti"],
-            defaults={"expires_at": expires_at},
-        )
+        revoke_token(token)
 
         return Response(
             {"message": "Logout successful."},

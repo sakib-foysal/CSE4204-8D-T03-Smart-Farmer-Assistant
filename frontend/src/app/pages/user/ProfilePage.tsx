@@ -38,11 +38,11 @@ export default function ProfilePage() {
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!profileData.name.trim() || !profileData.email.trim()) {
-      setError('Name and email are required.');
+      setError(t('nameEmailRequired'));
       return;
     }
     if (!emailPattern.test(profileData.email)) {
-      setError('Please enter a valid email address.');
+      setError(t('validEmail'));
       return;
     }
 
@@ -59,9 +59,9 @@ export default function ProfilePage() {
       });
       setUser(response.user);
       setIsEditing(false);
-      toast.success(response.message);
+      toast.success(t('profileUpdated'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update profile.');
+      setError(err instanceof Error ? err.message : t('couldNotUpdateProfile'));
     } finally {
       setSaving(false);
     }
@@ -77,7 +77,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('profile')}</h1>
-            <p className="text-gray-600">Manage your account information</p>
+            <p className="text-gray-600">{t('manageAccount')}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -93,21 +93,21 @@ export default function ProfilePage() {
                   <h2 className="font-bold text-xl text-gray-900">{profileData.name}</h2>
                   <p className="text-sm text-gray-600 mt-1">{profileData.email}</p>
                   <Badge className="mt-3 bg-green-100 text-green-800 hover:bg-green-200">
-                    Farmer Account
+                    {t('farmerAccount')}
                   </Badge>
                   <div className="mt-6 pt-6 border-t">
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Member since</span>
+                        <span className="text-gray-600">{t('memberSince')}</span>
                         <span className="font-medium">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Total Detections</span>
-                        <span className="font-medium">Live</span>
+                        <span className="text-gray-600">{t('totalDetections')}</span>
+                        <span className="font-medium">{t('live')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Chat Messages</span>
-                        <span className="font-medium">Live</span>
+                        <span className="text-gray-600">{t('totalChats')}</span>
+                        <span className="font-medium">{t('live')}</span>
                       </div>
                     </div>
                   </div>
@@ -119,8 +119,8 @@ export default function ProfilePage() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('profile')} Information</CardTitle>
-                  <CardDescription>Update your personal details</CardDescription>
+                  <CardTitle>{t('profileInformation')}</CardTitle>
+                  <CardDescription>{t('manageAccount')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -195,12 +195,12 @@ export default function ProfilePage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Change {t('password')}</CardTitle>
-                  <CardDescription>Update your password to keep your account secure</CardDescription>
+                  <CardTitle>{t('changePassword')}</CardTitle>
+                  <CardDescription>{t('passwordNotice')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Current {t('password')}</Label>
+                    <Label>{t('currentPassword')}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
                       <Input type="password" placeholder="••••••••" className="pl-10" />
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>New {t('password')}</Label>
+                    <Label>{t('newPassword')}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
                       <Input type="password" placeholder="••••••••" className="pl-10" />
@@ -224,7 +224,7 @@ export default function ProfilePage() {
                   </div>
 
                   <Button className="w-full bg-green-600 hover:bg-green-700">
-                    Update {t('password')}
+                    {t('updatePassword')}
                   </Button>
                 </CardContent>
               </Card>

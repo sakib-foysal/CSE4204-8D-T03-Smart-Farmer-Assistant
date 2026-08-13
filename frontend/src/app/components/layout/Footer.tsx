@@ -63,7 +63,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="size-4 mt-1 flex-shrink-0" />
-                <span>Northern University of Business & Technology, Khulna, Bangladesh</span>
+                <span>{t('address')}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="size-4 flex-shrink-0" />

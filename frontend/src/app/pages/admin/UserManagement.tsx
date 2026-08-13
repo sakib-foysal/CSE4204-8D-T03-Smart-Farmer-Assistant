@@ -46,13 +46,13 @@ export default function UserManagement() {
     try {
       setUsers(await api.adminUsers(token));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not load users.');
+      toast.error(error instanceof Error ? error.message : t('noData'));
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { void loadUsers(); }, [token]);
+  useEffect(() => { void loadUsers(); }, [token, t]);
 
   const filteredUsers = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
@@ -80,10 +80,10 @@ export default function UserManagement() {
     try {
       const updated = await api.updateAdminUser(token, selectedUser.id, form);
       setUsers((current) => current.map((user) => user.id === updated.id ? updated : user));
-      toast.success('User details updated successfully.');
+      toast.success(t('profileUpdated'));
       closeUserDialog();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not update user.');
+      toast.error(error instanceof Error ? error.message : t('noData'));
     } finally {
       setSaving(false);
     }
@@ -95,10 +95,10 @@ export default function UserManagement() {
     try {
       await api.deleteAdminUser(token, userToDelete.id);
       setUsers((current) => current.filter((user) => user.id !== userToDelete.id));
-      toast.success('User deleted successfully.');
+      toast.success(t('delete'));
       setUserToDelete(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not delete user.');
+      toast.error(error instanceof Error ? error.message : t('noData'));
     } finally {
       setSaving(false);
     }
@@ -110,7 +110,7 @@ export default function UserManagement() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <h1 className="mb-2 text-3xl font-bold text-gray-900">{t('userManagement')}</h1>
-            <p className="text-gray-600">View and manage every account from the main database.</p>
+            <p className="text-gray-600">{t('userManagement')}</p>
           </div>
 
           <Card>
@@ -118,24 +118,24 @@ export default function UserManagement() {
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <CardTitle>{t('totalUsers')}: {users.length}</CardTitle>
-                  <CardDescription>Live registered-user list</CardDescription>
+                  <CardDescription>{t('totalUsers')}</CardDescription>
                 </div>
                 <div className="relative w-full md:w-80">
                   <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-                  <Input placeholder="Search by name, username, email or phone..." value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="pl-10" />
+                  <Input placeholder={t('search')} value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="pl-10" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto rounded-md border">
                 <Table>
-                  <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Username</TableHead><TableHead>Email</TableHead><TableHead>Phone</TableHead><TableHead>Joined</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>{t('name')}</TableHead><TableHead>{t('username')}</TableHead><TableHead>{t('email')}</TableHead><TableHead>{t('phone')}</TableHead><TableHead>{t('joined')}</TableHead><TableHead>{t('status')}</TableHead><TableHead>{t('actions')}</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {loading ? <TableRow><TableCell colSpan={8} className="py-8 text-center text-gray-500">Loading users...</TableCell></TableRow> : filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                    {loading ? <TableRow><TableCell colSpan={8} className="py-8 text-center text-gray-500">{t('loading')}</TableCell></TableRow> : filteredUsers.length > 0 ? filteredUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">#{user.id.slice(0, 8)}</TableCell>
                         <TableCell>{displayName(user)}</TableCell><TableCell>{user.username}</TableCell><TableCell>{user.email || '—'}</TableCell><TableCell>{user.phone || '—'}</TableCell><TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell><Badge className={user.is_active ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}>{user.is_active ? 'Active' : 'Inactive'}</Badge></TableCell>
+                        <TableCell><Badge className={user.is_active ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}>{user.is_active ? t('active') : t('inactive')}</Badge></TableCell>
                         <TableCell><div className="flex gap-2"><Button variant="outline" size="sm" title="View details" onClick={() => openUser(user)}><Eye className="size-4" /></Button><Button variant="outline" size="sm" title="Edit user" onClick={() => openUser(user, true)}><Edit className="size-4" /></Button><Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" title="Delete user" onClick={() => setUserToDelete(user)}><Trash2 className="size-4" /></Button></div></TableCell>
                       </TableRow>
                     )) : <TableRow><TableCell colSpan={8} className="py-8 text-center text-gray-500">{t('noData')}</TableCell></TableRow>}

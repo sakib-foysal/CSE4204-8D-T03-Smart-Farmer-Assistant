@@ -48,7 +48,7 @@ export default function AdminDashboard() {
     <PageLayout className="bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h1 className="mb-2 text-3xl font-bold text-gray-900">{t('adminPanel')}</h1><p className="text-gray-600">Live database activity and registered-user overview</p></div>
+          <div><h1 className="mb-2 text-3xl font-bold text-gray-900">{t('adminPanel')}</h1><p className="text-gray-600">{t('systemActivity')}</p></div>
           <Button variant="outline" onClick={() => { setRefreshing(true); void loadDashboard(); }} disabled={refreshing}><RefreshCw className={`mr-2 size-4 ${refreshing ? 'animate-spin' : ''}`} />Refresh</Button>
         </div>
 

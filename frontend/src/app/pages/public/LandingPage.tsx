@@ -85,7 +85,7 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">{t('features')}</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Empowering farmers with AI-driven insights and real-time agricultural support
+              {t('landingFeaturesDescription')}
             </p>
           </div>
 
@@ -117,8 +117,8 @@ export default function LandingPage() {
                   1
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Register Your Account</h3>
-                  <p className="text-gray-600">Sign up with your basic information to get started with the platform.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('step1Title')}</h3>
+                  <p className="text-gray-600">{t('step1Description')}</p>
                 </div>
               </div>
 
@@ -127,8 +127,8 @@ export default function LandingPage() {
                   2
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Upload Crop Images or Ask Questions</h3>
-                  <p className="text-gray-600">Take a photo of your crop or ask our AI chatbot any farming question.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('step2Title')}</h3>
+                  <p className="text-gray-600">{t('step2Description')}</p>
                 </div>
               </div>
 
@@ -137,8 +137,8 @@ export default function LandingPage() {
                   3
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Get AI-Powered Recommendations</h3>
-                  <p className="text-gray-600">Receive instant disease detection, treatment advice, fertilizer recommendations, and more.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('step3Title')}</h3>
+                  <p className="text-gray-600">{t('step3Description')}</p>
                 </div>
               </div>
 
@@ -147,8 +147,8 @@ export default function LandingPage() {
                   4
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Track Your Farming History</h3>
-                  <p className="text-gray-600">Review past detections and conversations to make better farming decisions.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('step4Title')}</h3>
+                  <p className="text-gray-600">{t('step4Description')}</p>
                 </div>
               </div>
             </div>
@@ -180,10 +180,10 @@ export default function LandingPage() {
       <section className="py-20 bg-green-600">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Transform Your Farming?
+            {t('ctaTitle')}
           </h2>
           <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of farmers already using AI to improve their crop yield and reduce losses.
+            {t('ctaText')}
           </p>
           <Button
             size="lg"

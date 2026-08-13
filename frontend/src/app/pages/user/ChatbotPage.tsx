@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import PageLayout from '../../components/layout/PageLayout';
@@ -13,18 +13,15 @@ interface Message {
   content: string;
 }
 
-const greeting: Message = {
-  role: 'assistant',
-  content: 'Hello! I am your Smart Farmer Assistant. Ask in Bangla or English about crops, pests, fertilizer, irrigation, or weather preparation.',
-};
-
 export default function ChatbotPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { token } = useAuth();
+  const greeting: Message = { role: 'assistant', content: t('greeting') };
   const [messages, setMessages] = useState<Message[]>([greeting]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [serviceError, setServiceError] = useState('');
+  const messageEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -38,7 +35,11 @@ export default function ChatbotPage() {
         setMessages([greeting, ...loaded]);
       })
       .catch(() => {});
-  }, [token]);
+  }, [token, language]);
+
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, isTyping]);
 
   const handleSend = async () => {
     const question = inputText.trim();
@@ -51,13 +52,13 @@ export default function ChatbotPage() {
     setIsTyping(true);
 
     try {
-      if (!token) throw new Error('Please log in again to use the AI assistant.');
+      if (!token) throw new Error(t('loginAgain'));
       const result = await api.askSFAI(token, question);
       const answer = result.response?.trim();
-      if (!answer) throw new Error('The AI returned an empty response. Please try again.');
+      if (!answer) throw new Error(t('aiEmpty'));
       setMessages((previous) => [...previous, { role: 'assistant', content: answer }]);
     } catch (error) {
-      setServiceError(error instanceof Error ? error.message : 'AI service is temporarily unavailable. Please try again.');
+      setServiceError(error instanceof Error ? error.message : t('aiUnavailable'));
     } finally {
       setIsTyping(false);
     }
@@ -72,18 +73,18 @@ export default function ChatbotPage() {
             <p className="text-gray-600">{t('smartChatbotDesc')}</p>
           </div>
 
-          <Card className="h-[calc(100vh-20rem)] min-h-[32rem]">
+          <Card className="h-[calc(100dvh-14rem)] min-h-[30rem] max-h-[48rem]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Bot className="size-6 text-green-600" />{t('smartChatbot')}</CardTitle>
-              <CardDescription>Live SF AI farming guidance in Bangla or English</CardDescription>
+              <CardDescription>{t('chatbotLiveDescription')}</CardDescription>
             </CardHeader>
-            <CardContent className="flex h-[calc(100%-8rem)] flex-col">
+            <CardContent className="flex h-[calc(100%-8rem)] min-h-0 flex-col">
               {serviceError && (
                 <div className="mb-4 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="alert">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0" /><span>{serviceError}</span>
                 </div>
               )}
-              <div className="mb-4 flex-1 space-y-4 overflow-y-auto">
+              <div className="mb-4 min-h-0 flex-1 space-y-4 overflow-y-auto scroll-smooth pr-1">
                 {messages.map((message, index) => (
                   <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${message.role === 'user' ? 'bg-blue-600' : 'bg-green-600'}`}>
@@ -94,11 +95,12 @@ export default function ChatbotPage() {
                     </div>
                   </div>
                 ))}
-                {isTyping && <div className="flex gap-3"><div className="flex size-8 items-center justify-center rounded-full bg-green-600"><Bot className="size-4 text-white" /></div><div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-600">SF AI is preparing advice...</div></div>}
+                {isTyping && <div className="flex gap-3"><div className="flex size-8 items-center justify-center rounded-full bg-green-600"><Bot className="size-4 text-white" /></div><div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-600">{t('aiPreparing')}</div></div>}
+                <div ref={messageEndRef} />
               </div>
               <div className="flex gap-2">
                 <Input value={inputText} onChange={(event) => setInputText(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && handleSend()} placeholder={t('askQuestion')} className="flex-1" maxLength={1200} />
-                <Button onClick={handleSend} disabled={isTyping || !inputText.trim()} className="bg-green-600 hover:bg-green-700" aria-label="Send question"><Send className="size-4" /></Button>
+                <Button onClick={handleSend} disabled={isTyping || !inputText.trim()} className="bg-green-600 hover:bg-green-700" aria-label={t('sendMessage')}><Send className="size-4" /></Button>
               </div>
             </CardContent>
           </Card>
