@@ -34,22 +34,22 @@ export default function RegisterPage() {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!formData.name.trim() || !formData.username.trim() || !formData.email.trim() || !formData.phone.trim()) {
-      setError('Please fill in all required fields.');
+      setError(t('requiredFields'));
       return;
     }
 
     if (!emailPattern.test(formData.email)) {
-      setError('Please enter a valid email address.');
+      setError(t('validEmail'));
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('passwordLength'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('passwordMatch'));
       return;
     }
 
@@ -67,10 +67,10 @@ export default function RegisterPage() {
         phone: formData.phone.replace(/[\s-]/g, ''),
         role: 'farmer',
       });
-      toast.success('Registration successful.');
+      toast.success(t('registrationSuccessful'));
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+      setError(err instanceof Error ? err.message : t('registrationFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +104,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t('username')}</Label>
                 <Input
                   id="username"
                   type="text"

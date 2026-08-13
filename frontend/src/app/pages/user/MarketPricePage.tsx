@@ -22,9 +22,9 @@ export default function MarketPricePage() {
 
     api.marketPrices(token)
       .then(setMarketPrices)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load market prices.'))
+      .catch((err) => setError(err instanceof Error ? err.message : t('couldNotLoadPrices')))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, t]);
 
   const filteredPrices = marketPrices.filter(item =>
     item.crop_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,13 +44,13 @@ export default function MarketPricePage() {
             <CardHeader>
               <CardTitle>{t('viewPrices')}</CardTitle>
               <CardDescription>
-                {t('lastUpdated')}: {marketPrices[0] ? new Date(marketPrices[0].date).toLocaleString() : 'No data yet'}
+                {t('lastUpdated')}: {marketPrices[0] ? new Date(marketPrices[0].date).toLocaleString() : t('noDataYet')}
               </CardDescription>
 
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
                 <Input
-                  placeholder={`${t('search')} crop name or region...`}
+                  placeholder={t('searchCropRegion')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -71,14 +71,14 @@ export default function MarketPricePage() {
                       <TableHead>{t('price')}</TableHead>
                       <TableHead>{t('unit')}</TableHead>
                       <TableHead>{t('region')}</TableHead>
-                      <TableHead>Trend</TableHead>
+                      <TableHead>{t('trend')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                          Loading prices...
+                          {t('loadingPrices')}
                         </TableCell>
                       </TableRow>
                     ) : filteredPrices.length > 0 ? (
@@ -91,18 +91,18 @@ export default function MarketPricePage() {
                             </div>
                           </TableCell>
                           <TableCell className="font-bold text-green-600">৳{Number(item.price).toFixed(2)}</TableCell>
-                          <TableCell>per {item.unit}</TableCell>
+                          <TableCell>{item.unit}</TableCell>
                           <TableCell>{item.region}</TableCell>
                           <TableCell>
                             {index % 2 === 0 ? (
                               <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
                                 <TrendingUp className="size-3 mr-1" />
-                                Live
+                                {t('live')}
                               </Badge>
                             ) : (
                               <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200">
                                 <TrendingDown className="size-3 mr-1" />
-                                Live
+                                {t('live')}
                               </Badge>
                             )}
                           </TableCell>

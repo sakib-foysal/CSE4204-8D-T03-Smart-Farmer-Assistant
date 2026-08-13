@@ -74,3 +74,42 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "username", "created_at"]
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    """Editable user representation exposed only through admin endpoints."""
+
+    password = serializers.CharField(write_only=True, min_length=8, required=False)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "phone",
+            "role",
+            "is_active",
+            "created_at",
+            "password",
+        ]
+        read_only_fields = ["id", "username", "created_at"]
+
+    def validate_email(self, value):
+        queryset = User.objects.filter(email__iexact=value)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if value and queryset.exists():
+            raise serializers.ValidationError("This email is already registered.")
+        return value
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance

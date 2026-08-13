@@ -11,3 +11,12 @@ class IsJWTAuthenticated(BasePermission):
         if not authorization.startswith("Bearer "):
             raise NotAuthenticated(self.message)
         return bool(request.user and request.user.is_authenticated)
+
+
+class IsAdminUser(IsJWTAuthenticated):
+    """Allow administrative account management only to application admins."""
+
+    message = "Administrator access is required."
+
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role == "admin"

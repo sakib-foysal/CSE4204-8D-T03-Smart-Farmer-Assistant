@@ -8,3 +8,9 @@ class FertilizerRecommendationSerializer(serializers.ModelSerializer):
         model = FertilizerRecommendation
         fields = ["id", "disease", "crop_name", "suggestion", "date"]
         read_only_fields = ["id", "date"]
+
+
+class FertilizerGenerateSerializer(serializers.Serializer):
+    crop_name = serializers.CharField(max_length=100, trim_whitespace=True)
+    farm_context = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    language = serializers.ChoiceField(choices=["en", "bn"], required=False, default="en")

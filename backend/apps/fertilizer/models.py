@@ -19,6 +19,8 @@ class FertilizerRecommendation(models.Model):
         DiseaseHistory,
         on_delete=models.CASCADE,
         related_name="fertilizer_recommendations"
+        , null=True,
+        blank=True,
     )
 
     user = models.ForeignKey(

@@ -63,7 +63,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="size-4 mt-1 flex-shrink-0" />
-                <span>Northern University of Business & Technology, Khulna, Bangladesh</span>
+                <span>{t('address')}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="size-4 flex-shrink-0" />
@@ -84,7 +84,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
           <p>© {currentYear} {t('appTitle')}. {t('footerRights')}.</p>
           <p className="mt-2 text-xs text-gray-500">
-            CSE4204-8D-T03 - Software Engineering Project
+            CSE4204-8D-T03 - Smart Farmar AI Assistant Project
           </p>
         </div>
       </div>

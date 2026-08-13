@@ -10,6 +10,7 @@ def home(request):
             "endpoints": {
                 "auth": "/api/register/ , /api/login/ , /api/logout/ , /api/profile/",
                 "chat_history": "/api/chat-history/",
+                "sf_ai_chat": "/api/chat-history/ask/",
                 "disease_history": "/api/disease-history/",
                 "fertilizer_recommendations": "/api/fertilizer-recommendations/",
                 "market_prices": "/api/market-prices/",

@@ -1,143 +1,52 @@
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Cloud, CloudLightning, CloudRain, Droplets, Sun, Wind, XCircle } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import PageLayout from '../../components/layout/PageLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Cloud, Droplets, Wind, AlertTriangle, CloudRain, Sun } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
-import { api, WeatherData } from '../../lib/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { api, LiveWeatherForecast, WeatherForecastDay } from '../../lib/api';
+
+function WeatherIcon({ code }: { code: number }) {
+  if ([95, 96, 99].includes(code)) return <CloudLightning className="size-7 text-amber-600" />;
+  if (code >= 51) return <CloudRain className="size-7 text-blue-500" />;
+  if (code >= 1) return <Cloud className="size-7 text-gray-500" />;
+  return <Sun className="size-7 text-yellow-500" />;
+}
 
 export default function WeatherPage() {
-  const { t } = useLanguage();
+  const { t, locale, language } = useLanguage();
   const { token } = useAuth();
-  const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
+  const [data, setData] = useState<LiveWeatherForecast | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
-
-    api.weather(token)
-      .then(setWeatherData)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load weather data.'))
+    setLoading(true); setError('');
+    api.weatherForecast(token, language)
+      .then(result => { setData(result); setSelectedDate(current => current && result.forecast.some(day => day.date === current) ? current : result.forecast[0]?.date ?? null); })
+      .catch(err => setError(err instanceof Error ? err.message : t('weatherUnavailable')))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, language, t]);
 
-  const currentWeather = weatherData[0];
-  const floodRisk = currentWeather?.flood_risk ?? 'low';
-  const condition = floodRisk === 'high' ? 'Heavy Rain Risk' : floodRisk === 'medium' ? 'Cloudy' : 'Stable';
+  const forecast = useMemo(() => data?.forecast ?? [], [data]);
+  const selectedDay = forecast.find(day => day.date === selectedDate) ?? forecast[0];
+  const hourly = data?.hourly.filter(item => item.date === selectedDay?.date) ?? [];
+  const condition = (day: WeatherForecastDay) => [95, 96, 99].includes(day.weather_code) ? t('thunderstorm') : day.rainfall > 0 || day.rain_probability >= 40 ? t('rainExpected') : day.weather_code >= 1 ? t('cloudy') : t('clearWeather');
+  const date = (value: string, options: Intl.DateTimeFormatOptions) => new Date(`${value}T00:00:00`).toLocaleDateString(locale, options);
+  const time = (value: string) => new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+  const alertName = (type: string) => ({ flood: language === 'bn' ? 'বন্যা বা জলাবদ্ধতা' : 'Flooding or waterlogging', rain: language === 'bn' ? 'ভারী বৃষ্টি' : 'Heavy rain', lightning: language === 'bn' ? 'বজ্রঝড়' : 'Lightning', wind: language === 'bn' ? 'দমকা হাওয়া' : 'Strong wind', heat: language === 'bn' ? 'তাপপ্রবাহ' : 'Heatwave' }[type] ?? type);
 
-  const forecast = useMemo(() => weatherData.slice(0, 7).map((item) => {
-    const riskCondition = item.flood_risk === 'high' ? 'Rainy' : item.flood_risk === 'medium' ? 'Cloudy' : 'Sunny';
-    const icon = riskCondition === 'Rainy'
-      ? <CloudRain className="size-6 text-blue-500" />
-      : riskCondition === 'Cloudy'
-        ? <Cloud className="size-6 text-gray-500" />
-        : <Sun className="size-6 text-yellow-500" />;
-
-    return {
-      day: new Date(item.date).toLocaleDateString(undefined, { weekday: 'long' }),
-      temp: Number(item.temperature),
-      condition: riskCondition,
-      icon,
-    };
-  }), [weatherData]);
-
-  return (
-    <PageLayout className="bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('weather')}</h1>
-            <p className="text-gray-600">{t('weatherAlertsDesc')}</p>
-          </div>
-
-          {error && (
-            <Alert className="mb-8 border-red-500 bg-red-50">
-              <AlertTriangle className="size-4 text-red-600" />
-              <AlertTitle className="text-red-800">Error</AlertTitle>
-              <AlertDescription className="text-red-700">{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {currentWeather && floodRisk !== 'low' && (
-            <Alert className="mb-8 border-orange-500 bg-orange-50">
-              <AlertTriangle className="size-4 text-orange-600" />
-              <AlertTitle className="text-orange-800">{t('floodAlert')}</AlertTitle>
-              <AlertDescription className="text-orange-700">
-                {floodRisk.toUpperCase()} flood risk detected. Rainfall recorded: {currentWeather.rainfall}mm.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Cloud className="size-6" />
-                {t('currentWeather')} - Khulna, Bangladesh
-              </CardTitle>
-              <CardDescription>
-                {currentWeather ? `Last updated: ${new Date(currentWeather.date).toLocaleString()}` : 'Live backend weather data'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p className="text-gray-500">Loading weather data...</p>
-              ) : currentWeather ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <Cloud className="size-8 text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">{t('temperature')}</p>
-                    <p className="text-3xl font-bold text-gray-900">{Number(currentWeather.temperature)}°C</p>
-                    <p className="text-xs text-gray-500 mt-1">{condition}</p>
-                  </div>
-
-                  <div className="text-center p-4 bg-cyan-50 rounded-lg">
-                    <Droplets className="size-8 text-cyan-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">{t('humidity')}</p>
-                    <p className="text-3xl font-bold text-gray-900">{Number(currentWeather.humidity)}%</p>
-                  </div>
-
-                  <div className="text-center p-4 bg-indigo-50 rounded-lg">
-                    <CloudRain className="size-8 text-indigo-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">{t('rainfall')}</p>
-                    <p className="text-3xl font-bold text-gray-900">{Number(currentWeather.rainfall)}mm</p>
-                  </div>
-
-                  <div className="text-center p-4 bg-gray-100 rounded-lg">
-                    <Wind className="size-8 text-gray-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Flood Risk</p>
-                    <p className="text-3xl font-bold text-gray-900 capitalize">{currentWeather.flood_risk}</p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500">No weather data found in database.</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('forecast')}</CardTitle>
-              <CardDescription>Weather records from backend database</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                {forecast.length > 0 ? forecast.map((day, index) => (
-                  <div key={index} className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <p className="text-sm font-medium text-gray-900 mb-2">{day.day}</p>
-                    {day.icon}
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{day.temp}°C</p>
-                    <p className="text-xs text-gray-600 mt-1">{day.condition}</p>
-                  </div>
-                )) : (
-                  <p className="text-gray-500 col-span-full">No forecast records available.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </PageLayout>
-  );
+  return <PageLayout className="bg-gray-50"><div className="container mx-auto px-4 py-8"><div className="mx-auto max-w-6xl">
+    <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><h1 className="mb-2 text-3xl font-bold text-gray-900">{t('weather')}</h1><p className="text-gray-600">{t('liveForecast')}</p></div><button type="button" onClick={() => setShowAlerts(value => !value)} className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 font-semibold text-white ${showAlerts ? 'bg-sky-600 hover:bg-sky-700' : 'bg-red-600 hover:bg-red-700'}`}>{showAlerts ? <Cloud className="size-5" /> : <AlertTriangle className="size-5" />}{showAlerts ? 'Weather' : 'Alert'}</button></div>
+    {error && <Alert className="mb-8 border-red-500 bg-red-50"><AlertTriangle className="size-4 text-red-600" /><AlertTitle>{t('weatherUnavailable')}</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+    {showAlerts ? <section><div className="mb-6"><h2 className="text-2xl font-bold">{t('weatherAlertsTitle')}</h2><p className="mt-1 text-gray-600">{t('weatherAlertsDescription')}</p></div>{loading ? <p>{t('preparingAlerts')}</p> : data?.alerts.length ? <div className="space-y-5">{data.alerts.map(alert => <Card key={`${alert.type}-${alert.start_date}`} className="border-red-200"><CardHeader className="bg-red-50"><CardTitle className="text-red-800"><AlertTriangle className="mr-2 inline size-5" />{alertName(alert.type)}: {t('floodAlert')}</CardTitle><CardDescription>{date(alert.start_date, { day: 'numeric', month: 'long' })} — {date(alert.end_date, { day: 'numeric', month: 'long' })}: {alert.message}</CardDescription></CardHeader><CardContent className="grid gap-5 pt-6 md:grid-cols-2"><div><h3 className="mb-3 font-semibold text-green-800"><CheckCircle2 className="mr-2 inline size-5" />{t('do')}</h3>{alert.do.map(item => <p key={item} className="mb-2 text-sm">• {item}</p>)}</div><div><h3 className="mb-3 font-semibold text-red-800"><XCircle className="mr-2 inline size-5" />{t('avoid')}</h3>{alert.avoid.map(item => <p key={item} className="mb-2 text-sm">• {item}</p>)}</div></CardContent></Card>)}</div> : <Card><CardContent className="py-12 text-center"><CheckCircle2 className="mx-auto mb-3 size-10 text-green-600" />{t('noAlerts')}</CardContent></Card>}</section> : <section>
+      <Card className="mb-8 border-sky-200"><CardHeader className="bg-sky-50"><CardTitle><Cloud className="mr-2 inline size-6 text-sky-600" />{t('currentWeather')}{data ? ` — ${data.location}` : ''}</CardTitle><CardDescription>{data ? `${t('updated')}: ${new Date(data.updated_at).toLocaleString(locale)}` : t('loadingWeather')}</CardDescription></CardHeader><CardContent>{loading ? <p>{t('loadingWeather')}</p> : data?.current ? <div className="grid grid-cols-2 gap-6 md:grid-cols-4">{[[Cloud, t('temperature'), `${data.current.temperature}°C`], [Droplets, t('humidity'), `${data.current.humidity}%`], [CloudRain, t('rainfall'), `${data.current.rainfall} mm`], [Wind, t('wind'), `${data.current.wind_speed} km/h`]].map(([Icon, label, value]) => { const MetricIcon = Icon as typeof Cloud; return <div key={String(label)} className="rounded-lg bg-sky-50 p-4 text-center"><MetricIcon className="mx-auto mb-2 size-8 text-sky-600" /><p className="text-sm">{String(label)}</p><p className="text-2xl font-bold">{String(value)}</p></div>; })}</div> : <p>{t('noWeatherData')}</p>}</CardContent></Card>
+      <Card><CardHeader><CardTitle>{t('forecast')}</CardTitle><CardDescription>{t('dailyForecastDescription')}</CardDescription></CardHeader><CardContent><div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">{forecast.map(day => <button type="button" key={day.date} onClick={() => setSelectedDate(day.date)} className={`rounded-lg border p-4 text-center transition ${selectedDay?.date === day.date ? 'border-sky-600 bg-sky-100 ring-2 ring-sky-200' : 'border-transparent bg-gray-50 hover:border-sky-300 hover:bg-sky-50'}`}><p className="mb-2 text-sm font-medium">{date(day.date, { weekday: 'short' })}</p><span className="mx-auto block w-fit"><WeatherIcon code={day.weather_code} /></span><p className="mt-2 font-bold">{day.temperature_max}° / {day.temperature_min}°</p><p className="mt-1 text-xs">{condition(day)}</p></button>)}</div></CardContent></Card>
+      {selectedDay && <Card className="mt-6 border-sky-200 bg-sky-50"><CardHeader><CardTitle className="text-sky-900">{date(selectedDay.date, { weekday: 'long', day: 'numeric', month: 'long' })} — {t('details')}</CardTitle><CardDescription>{condition(selectedDay)}</CardDescription></CardHeader><CardContent className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4"><p><strong>{t('temperature')}:</strong> {selectedDay.temperature_min}° – {selectedDay.temperature_max}°C</p><p><strong>{t('rainfall')}:</strong> {selectedDay.rainfall} mm</p><p><strong>{t('rain')}:</strong> {selectedDay.rain_probability}%</p><p><strong>{t('wind')}:</strong> {selectedDay.wind_speed} km/h</p></CardContent><CardContent className="border-t pt-5"><h3 className="mb-4 font-semibold text-sky-900">{language === 'bn' ? 'সময়ভিত্তিক বৃষ্টির সম্ভাবনা' : 'Hourly rain probability'}</h3><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">{hourly.map(item => <div key={item.time} className={`rounded-lg border p-3 text-center ${item.rain_probability >= 60 ? 'border-blue-300 bg-blue-100' : 'border-sky-100 bg-white'}`}><p className="font-semibold">{time(item.time)}</p><p className="mt-1 text-lg font-bold text-blue-700">{item.rain_probability}%</p><p className="text-xs text-gray-600">{t('rain')}</p><p className="mt-1 text-xs text-gray-500">{item.rainfall} mm</p></div>)}</div></CardContent></Card>}
+    </section>}
+  </div></div></PageLayout>;
 }

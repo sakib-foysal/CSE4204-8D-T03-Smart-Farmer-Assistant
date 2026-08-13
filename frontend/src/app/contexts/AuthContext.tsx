@@ -19,23 +19,23 @@ const TOKEN_KEY = "smart_farmer_token";
 const USER_KEY = "smart_farmer_user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem(TOKEN_KEY));
   const [user, setUserState] = useState<UserProfile | null>(() => {
-    const stored = localStorage.getItem(USER_KEY);
+    const stored = sessionStorage.getItem(USER_KEY);
     return stored ? JSON.parse(stored) : null;
   });
   const [isLoading, setIsLoading] = useState(Boolean(token));
 
   const persistSession = (nextToken: string, nextUser: UserProfile) => {
-    localStorage.setItem(TOKEN_KEY, nextToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+    sessionStorage.setItem(TOKEN_KEY, nextToken);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     setToken(nextToken);
     setUserState(nextUser);
   };
 
   const clearSession = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
     setToken(null);
     setUserState(null);
   };
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshProfile = async () => {
     if (!token) return;
     const profile = await api.profile(token);
-    localStorage.setItem(USER_KEY, JSON.stringify(profile));
+    sessionStorage.setItem(USER_KEY, JSON.stringify(profile));
     setUserState(profile);
   };
 
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     api
       .profile(token)
       .then((profile) => {
-        localStorage.setItem(USER_KEY, JSON.stringify(profile));
+        sessionStorage.setItem(USER_KEY, JSON.stringify(profile));
         setUserState(profile);
       })
       .catch(clearSession)
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       refreshProfile,
       setUser: (nextUser) => {
-        localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+        sessionStorage.setItem(USER_KEY, JSON.stringify(nextUser));
         setUserState(nextUser);
       },
     }),

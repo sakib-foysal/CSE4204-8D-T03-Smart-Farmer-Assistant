@@ -77,6 +77,54 @@ class AuthenticationAPITests(APITestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(RevokedToken.objects.count(), 1)
 
+	def test_admin_can_list_update_and_delete_database_users(self):
+		admin = User.objects.create_user(
+			username="adminuser",
+			email="admin@example.com",
+			password="StrongPass123",
+			role="admin",
+		)
+		login = self.client.post(
+			"/api/login/",
+			{"identifier": "adminuser", "password": "StrongPass123"},
+			format="json",
+		)
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access_token']}")
+		dashboard_response = self.client.get("/api/admin/dashboard/")
+		self.assertEqual(dashboard_response.status_code, 200)
+		self.assertEqual(dashboard_response.data["stats"]["total_users"], 2)
+		self.assertEqual(len(dashboard_response.data["activity"]), 7)
+		self.assertEqual(len(dashboard_response.data["recent_users"]), 2)
+
+		list_response = self.client.get("/api/admin/users/")
+		self.assertEqual(list_response.status_code, 200)
+		self.assertEqual(len(list_response.data), 2)
+
+		update_response = self.client.patch(
+			f"/api/admin/users/{self.user.id}/",
+			{"first_name": "Managed", "is_active": False},
+			format="json",
+		)
+		self.assertEqual(update_response.status_code, 200)
+		self.user.refresh_from_db()
+		self.assertEqual(self.user.first_name, "Managed")
+		self.assertFalse(self.user.is_active)
+
+		delete_response = self.client.delete(f"/api/admin/users/{self.user.id}/")
+		self.assertEqual(delete_response.status_code, 204)
+		self.assertFalse(User.objects.filter(id=self.user.id).exists())
+
+	def test_non_admin_cannot_access_user_management_api(self):
+		login = self.client.post(
+			"/api/login/",
+			{"identifier": "demo", "password": "StrongPass123"},
+			format="json",
+		)
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access_token']}")
+		response = self.client.get("/api/admin/users/")
+		self.assertEqual(response.status_code, 403)
+		self.assertEqual(self.client.get("/api/admin/dashboard/").status_code, 403)
+
 
 class ProjectApiSmokeTests(APITestCase):
 

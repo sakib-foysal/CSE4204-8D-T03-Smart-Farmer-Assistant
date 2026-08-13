@@ -1,6 +1,14 @@
 from django.urls import path
 
-from apps.users.views import LoginAPIView, LogoutAPIView, ProfileAPIView, RegisterAPIView
+from apps.users.views import (
+    AdminUserDetailAPIView,
+    AdminDashboardAPIView,
+    AdminUserListAPIView,
+    LoginAPIView,
+    LogoutAPIView,
+    ProfileAPIView,
+    RegisterAPIView,
+)
 
 
 urlpatterns = [
@@ -8,4 +16,7 @@ urlpatterns = [
     path("login/", LoginAPIView.as_view(), name="login"),
     path("logout/", LogoutAPIView.as_view(), name="logout"),
     path("profile/", ProfileAPIView.as_view(), name="profile"),
+    path("admin/users/", AdminUserListAPIView.as_view(), name="admin-user-list"),
+    path("admin/users/<uuid:id>/", AdminUserDetailAPIView.as_view(), name="admin-user-detail"),
+    path("admin/dashboard/", AdminDashboardAPIView.as_view(), name="admin-dashboard"),
 ]

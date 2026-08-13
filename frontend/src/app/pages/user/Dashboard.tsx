@@ -42,37 +42,37 @@ export default function Dashboard() {
   const quickActions = [
     {
       title: t('diseaseDetection'),
-      description: 'Upload crop image for AI analysis',
+      description: t('aiDiseaseDesc'),
       icon: <Scan className="size-8 text-green-600" />,
       path: '/disease-detection',
     },
     {
       title: t('aiChatbot'),
-      description: 'Ask farming questions to AI',
+      description: t('smartChatbotDesc'),
       icon: <MessageSquare className="size-8 text-green-600" />,
       path: '/chatbot',
     },
     {
       title: t('weather'),
-      description: 'Check weather and flood alerts',
+      description: t('weatherAlertsDesc'),
       icon: <Cloud className="size-8 text-green-600" />,
       path: '/weather',
     },
     {
       title: t('marketPrices'),
-      description: 'View current market prices',
+      description: t('livePricesDesc'),
       icon: <TrendingUp className="size-8 text-green-600" />,
       path: '/market-prices',
     },
     {
       title: t('fertilizer'),
-      description: 'Get fertilizer recommendations',
+      description: t('fertilizerGuideDesc'),
       icon: <Droplets className="size-8 text-green-600" />,
       path: '/fertilizer',
     },
     {
       title: t('history'),
-      description: 'View your activity history',
+      description: t('historyTrackingDesc'),
       icon: <Clock className="size-8 text-green-600" />,
       path: '/history',
     },
@@ -81,17 +81,17 @@ export default function Dashboard() {
   const recentActivity = useMemo(() => {
     const activities = [
       ...diseaseHistory.map((item) => ({
-        text: `Detected: ${item.prediction}`,
+        text: `${t('diseaseDetection')}: ${item.prediction}`,
         time: new Date(item.date).toLocaleString(),
         date: item.date,
       })),
       ...chatHistory.map((item) => ({
-        text: `Asked: ${item.question}`,
+        text: `${t('aiChatbot')}: ${item.question}`,
         time: new Date(item.date).toLocaleString(),
         date: item.date,
       })),
       ...fertilizerHistory.map((item) => ({
-        text: `Recommendation: ${item.crop_name}`,
+        text: `${t('recommendations')}: ${item.crop_name}`,
         time: new Date(item.date).toLocaleString(),
         date: item.date,
       })),
@@ -100,14 +100,14 @@ export default function Dashboard() {
     return activities
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
-  }, [chatHistory, diseaseHistory, fertilizerHistory]);
+  }, [chatHistory, diseaseHistory, fertilizerHistory, t]);
 
   return (
     <PageLayout className="bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {t('welcome')}, {user?.first_name || user?.username || 'Farmer'}!
+            {t('welcome')}, {user?.first_name || user?.username || t('farmer')}!
           </h1>
           <p className="text-gray-600">{t('dashboard')}</p>
         </div>
@@ -133,7 +133,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>{t('quickActions')}</CardTitle>
-                <CardDescription>Access key features quickly</CardDescription>
+                <CardDescription>{t('accessFeatures')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -171,7 +171,7 @@ export default function Dashboard() {
                       <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
                     </div>
                   )) : (
-                    <p className="text-sm text-gray-500">No activity yet. Start by using one of the quick actions.</p>
+                    <p className="text-sm text-gray-500">{t('noActivity')}</p>
                   )}
                 </div>
                 <Button

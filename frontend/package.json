@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "predev": "node scripts/start-backend.cjs",
     "dev": "vite"
   },
   "dependencies": {

@@ -11,6 +11,21 @@ export interface UserProfile {
   created_at: string;
 }
 
+export interface AdminUser extends UserProfile {
+  is_active: boolean;
+}
+
+export interface AdminDashboardData {
+  stats: {
+    total_users: number;
+    total_detections: number;
+    total_chats: number;
+    active_today: number;
+  };
+  activity: Array<{ date: string; name: string; users: number; detections: number; chats: number }>;
+  recent_users: AdminUser[];
+}
+
 export interface AuthResponse {
   message: string;
   user: UserProfile;
@@ -40,7 +55,7 @@ export interface DiseaseHistory {
   id: string;
   image_url: string;
   prediction: string;
-  confidence: string;
+  confidence: string | number;
   treatment: string;
   date: string;
 }
@@ -52,11 +67,67 @@ export interface ChatHistory {
   date: string;
 }
 
+export interface WeatherForecastDay {
+  date: string;
+  temperature_max: number;
+  temperature_min: number;
+  rainfall: number;
+  rain_probability: number;
+  wind_speed: number;
+  weather_code: number;
+  flood_risk: "low" | "medium" | "high";
+}
+
+export interface WeatherAlert {
+  type: "flood" | "rain" | "lightning" | "wind" | "heat";
+  severity: "medium" | "high";
+  message: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  do: string[];
+  avoid: string[];
+}
+
+export interface HourlyRainForecast {
+  date: string;
+  time: string;
+  rain_probability: number;
+  rainfall: number;
+}
+
+export interface LiveWeatherForecast {
+  location: string;
+  updated_at: string;
+  current: { temperature: number; humidity: number; rainfall: number; wind_speed: number; weather_code: number };
+  forecast: WeatherForecastDay[];
+  hourly: HourlyRainForecast[];
+  alerts: WeatherAlert[];
+}
+
+export interface DiseaseAnalysis extends DiseaseHistory {
+  crop: string;
+  disclaimer: string;
+}
+
+export interface SFAIChatResponse extends ChatHistory {
+  model: string;
+}
+
 export interface FertilizerRecommendation {
   id: string;
   disease: string;
   crop_name: string;
   suggestion: string;
+  date: string;
+}
+
+export interface FertilizerPlan {
+  id: string;
+  crop: string;
+  fertilizers: Array<{ name: string; amount: string; timing: string }>;
+  tips: string[];
+  disclaimer: string;
   date: string;
 }
 
@@ -172,6 +243,35 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
+  weatherForecast: (token: string, language: "en" | "bn") =>
+    apiRequest<LiveWeatherForecast>(`/api/weather-data/forecast/?lang=${language}`, { token }),
+  analyzeDisease: (token: string, image_data: string, crop_hint = "", language: "en" | "bn" = "en") =>
+    apiRequest<DiseaseAnalysis>("/api/disease-history/analyze/", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ image_data, crop_hint, language }),
+    }),
+  askSFAI: (token: string, question: string) =>
+    apiRequest<SFAIChatResponse>("/api/chat-history/ask/", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ question }),
+    }),
+  adminUsers: (token: string) =>
+    apiRequest<AdminUser[]>("/api/admin/users/", { token }),
+  adminDashboard: (token: string) =>
+    apiRequest<AdminDashboardData>("/api/admin/dashboard/", { token }),
+  updateAdminUser: (token: string, id: string, payload: Partial<AdminUser>) =>
+    apiRequest<AdminUser>(`/api/admin/users/${id}/`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(payload),
+    }),
+  deleteAdminUser: (token: string, id: string) =>
+    apiRequest<void>(`/api/admin/users/${id}/`, {
+      method: "DELETE",
+      token,
+    }),
   fertilizerRecommendations: (token: string) =>
     apiRequest<FertilizerRecommendation[]>("/api/fertilizer-recommendations/", {
       token,
@@ -184,5 +284,11 @@ export const api = {
       method: "POST",
       token,
       body: JSON.stringify(payload),
+    }),
+  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "", language: "en" | "bn" = "en") =>
+    apiRequest<FertilizerPlan>("/api/fertilizer-recommendations/generate/", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ crop_name, farm_context, language }),
     }),
 };

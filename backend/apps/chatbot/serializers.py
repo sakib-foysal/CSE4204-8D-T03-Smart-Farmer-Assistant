@@ -8,3 +8,12 @@ class ChatHistorySerializer(serializers.ModelSerializer):
         model = ChatHistory
         fields = ["id", "question", "response", "date"]
         read_only_fields = ["id", "date"]
+
+
+class SFAIChatSerializer(serializers.Serializer):
+    question = serializers.CharField(max_length=1200, trim_whitespace=True)
+
+    def validate_question(self, value):
+        if not value:
+            raise serializers.ValidationError("Please enter a farming question.")
+        return value
