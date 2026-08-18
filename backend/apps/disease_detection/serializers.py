@@ -5,14 +5,19 @@ from apps.disease_detection.models import DiseaseHistory
 
 
 class DiseaseHistorySerializer(serializers.ModelSerializer):
+    fertilizer_recommendations = serializers.SerializerMethodField()
+
+    def get_fertilizer_recommendations(self, instance):
+        return [recommendation.suggestion for recommendation in instance.fertilizer_recommendations.all()]
+
     class Meta:
         model = DiseaseHistory
-        fields = ["id", "image_url", "prediction", "confidence", "treatment", "date"]
+        fields = ["id", "image_url", "crop_name", "prediction", "confidence", "treatment", "disclaimer", "fertilizer_recommendations", "date"]
         read_only_fields = ["id", "date"]
 
 
 class DiseaseAnalyzeSerializer(serializers.Serializer):
-    image_data = serializers.CharField(max_length=3_000_000)
+    image_data = serializers.CharField(max_length=7_200_000)
     crop_hint = serializers.CharField(max_length=100, required=False, allow_blank=True)
     language = serializers.ChoiceField(choices=["en", "bn"], required=False, default="en")
 
@@ -27,8 +32,8 @@ class DiseaseAnalyzeSerializer(serializers.Serializer):
             raw = base64.b64decode(encoded, validate=True)
         except (ValueError, base64.binascii.Error) as exc:
             raise serializers.ValidationError("The selected image is invalid.") from exc
-        if len(raw) > 2 * 1024 * 1024:
-            raise serializers.ValidationError("Image must be 2 MB or smaller.")
+        if len(raw) > 5 * 1024 * 1024:
+            raise serializers.ValidationError("Image must be 5 MB or smaller.")
         self.context["mime_type"] = mime_type
         self.context["image_base64"] = encoded
         return value
