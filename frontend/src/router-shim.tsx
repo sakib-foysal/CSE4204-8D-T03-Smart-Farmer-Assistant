@@ -2,10 +2,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 
 interface RouterCtx {
   path: string;
+  search: string;
   navigate: (to: string) => void;
 }
 
-const Ctx = createContext<RouterCtx>({ path: "/", navigate: () => {} });
+const Ctx = createContext<RouterCtx>({ path: "/", search: "", navigate: () => {} });
 
 function getBrowserPath() {
   if (typeof window === "undefined") return "/";
@@ -14,20 +15,23 @@ function getBrowserPath() {
 
 export function RouterProvider({ children, initialPath }: { children: React.ReactNode; initialPath?: string }) {
   const [path, setPath] = useState(initialPath ?? getBrowserPath());
+  const [search, setSearch] = useState(typeof window === "undefined" ? "" : window.location.search);
   const navigate = useCallback((to: string) => {
-    setPath(to);
-    if (typeof window !== "undefined" && window.location.pathname !== to) {
+    const target = new URL(to, window.location.origin);
+    setPath(target.pathname);
+    setSearch(target.search);
+    if (typeof window !== "undefined" && `${window.location.pathname}${window.location.search}` !== `${target.pathname}${target.search}`) {
       window.history.pushState({}, "", to);
     }
   }, []);
 
   useEffect(() => {
-    const handlePopState = () => setPath(getBrowserPath());
+    const handlePopState = () => { setPath(getBrowserPath()); setSearch(window.location.search); };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  return <Ctx.Provider value={{ path, navigate }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ path, search, navigate }}>{children}</Ctx.Provider>;
 }
 
 export function useNavigate() {
@@ -35,8 +39,8 @@ export function useNavigate() {
 }
 
 export function useLocation() {
-  const { path } = useContext(Ctx);
-  return { pathname: path, search: "", hash: "" };
+  const { path, search } = useContext(Ctx);
+  return { pathname: path, search, hash: "" };
 }
 
 export function Link({
@@ -66,5 +70,5 @@ export function Link({
 // Stub — not used when App.tsx does its own path→component mapping
 export function Outlet() { return null; }
 export function createBrowserRouter() { return {}; }
-export function createMemoryRouter() { return {}; }
+export function createMemoryRouter(..._args: unknown[]) { return {}; }
 export function createHashRouter() { return {}; }

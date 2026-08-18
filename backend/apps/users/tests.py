@@ -30,6 +30,12 @@ class AuthenticationAPITests(APITestCase):
 		self.assertIn("access_token", response.data)
 		self.assertTrue(User.objects.filter(username="farmer1").exists())
 
+	def test_register_rejects_incomplete_bangladesh_phone_number(self):
+		payload = {**self.register_payload, "username": "shortphone", "email": "shortphone@example.com", "phone": "+880171234567"}
+		response = self.client.post("/api/register/", payload, format="json")
+		self.assertEqual(response.status_code, 400)
+		self.assertIn("phone", response.data)
+
 	def test_login_returns_token(self):
 		response = self.client.post(
 			"/api/login/",

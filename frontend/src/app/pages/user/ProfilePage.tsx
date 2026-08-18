@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { Avatar, AvatarFallback } from '../../components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
-import { User, Mail, Phone, Lock } from 'lucide-react';
+import { User, Mail, Phone, Lock, Camera, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '../../lib/api';
 
@@ -19,10 +19,14 @@ export default function ProfilePage() {
     name: '',
     email: '',
     phone: '',
+    avatar: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -30,6 +34,7 @@ export default function ProfilePage() {
       name: `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.username,
       email: user.email ?? '',
       phone: user.phone ?? '',
+      avatar: user.avatar ?? '',
     });
   }, [user]);
 
@@ -56,6 +61,7 @@ export default function ProfilePage() {
         last_name: lastNameParts.join(' '),
         email: profileData.email.trim(),
         phone: profileData.phone.replace(/[\s-]/g, ''),
+        avatar: profileData.avatar,
       });
       setUser(response.user);
       setIsEditing(false);
@@ -69,6 +75,19 @@ export default function ProfilePage() {
 
   const handleChange = (field: string, value: string) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      toast.error('Please select a PNG, JPG, or WEBP image that is 5 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setProfileData(current => ({ ...current, avatar: String(reader.result) }));
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -86,10 +105,12 @@ export default function ProfilePage() {
               <CardContent className="pt-6">
                 <div className="text-center">
                   <Avatar className="size-24 mx-auto mb-4">
+                    {profileData.avatar && <AvatarImage src={profileData.avatar} alt={profileData.name || t('profile')} />}
                     <AvatarFallback className="bg-green-600 text-white text-2xl">
                       {(profileData.name || user?.username || 'SF').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                  {isEditing && <label className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-green-700 hover:text-green-800"><Camera className="size-4" />Change photo<input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleAvatarChange} className="hidden" /></label>}
                   <h2 className="font-bold text-xl text-gray-900">{profileData.name}</h2>
                   <p className="text-sm text-gray-600 mt-1">{profileData.email}</p>
                   <Badge className="mt-3 bg-green-100 text-green-800 hover:bg-green-200">
@@ -203,7 +224,10 @@ export default function ProfilePage() {
                     <Label>{t('currentPassword')}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
-                      <Input type="password" placeholder="••••••••" className="pl-10" />
+                      <Input type={showCurrentPassword ? 'text' : 'password'} placeholder="••••••••" className="pl-10 pr-10" />
+                      <button type="button" onClick={() => setShowCurrentPassword(value => !value)} aria-label={showCurrentPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-green-600">
+                        {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
                     </div>
                   </div>
 
@@ -211,7 +235,10 @@ export default function ProfilePage() {
                     <Label>{t('newPassword')}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
-                      <Input type="password" placeholder="••••••••" className="pl-10" />
+                      <Input type={showNewPassword ? 'text' : 'password'} placeholder="••••••••" className="pl-10 pr-10" />
+                      <button type="button" onClick={() => setShowNewPassword(value => !value)} aria-label={showNewPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-green-600">
+                        {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
                     </div>
                   </div>
 
@@ -219,7 +246,10 @@ export default function ProfilePage() {
                     <Label>{t('confirmPassword')}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
-                      <Input type="password" placeholder="••••••••" className="pl-10" />
+                      <Input type={showConfirmPassword ? 'text' : 'password'} placeholder="••••••••" className="pl-10 pr-10" />
+                      <button type="button" onClick={() => setShowConfirmPassword(value => !value)} aria-label={showConfirmPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-green-600">
+                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
                     </div>
                   </div>
 

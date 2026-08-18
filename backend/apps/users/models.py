@@ -24,6 +24,8 @@ class User(AbstractUser):
         ]
     )
 
+    avatar = models.TextField(blank=True, default="")
+
     role = models.CharField(
         max_length=10,
         default="farmer"

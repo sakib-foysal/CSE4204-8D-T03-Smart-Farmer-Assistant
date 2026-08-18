@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import PageLayout from '../../components/layout/PageLayout';
@@ -6,15 +6,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { Scan, MessageSquare, Trash2, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
+import { Scan, MessageSquare, Trash2, Eye, Search, Video } from 'lucide-react';
 import { api, ChatHistory, DiseaseHistory } from '../../lib/api';
+import { useLocation, useNavigate } from '../../../router-shim';
+
+function DiseaseImage({ item, className }: { item: DiseaseHistory; className: string }) {
+  const incompleteImage = item.image_url.startsWith('data:image/') && item.image_url.length < 1000;
+  const [failed, setFailed] = useState(incompleteImage);
+  if (failed) return <div className={`${className} flex items-center justify-center bg-gray-100 p-2 text-center text-xs text-gray-500`}>Original image is unavailable for this older record.</div>;
+  return <img src={item.image_url} alt={item.prediction} className={className} onError={() => setFailed(true)} />;
+}
 
 export default function HistoryPage() {
   const { t } = useLanguage();
   const { token } = useAuth();
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const selectedTab = new URLSearchParams(search).get('tab') === 'chat' ? 'chat' : 'disease';
   const [diseaseHistory, setDiseaseHistory] = useState<DiseaseHistory[]>([]);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDisease, setSelectedDisease] = useState<DiseaseHistory | null>(null);
+  const [diseaseSearch, setDiseaseSearch] = useState('');
 
   useEffect(() => {
     if (!token) return;
@@ -27,6 +42,11 @@ export default function HistoryPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
+  const filteredDiseaseHistory = useMemo(() => {
+    const query = diseaseSearch.toLowerCase().trim();
+    return query ? diseaseHistory.filter((item) => item.prediction.toLowerCase().includes(query)) : diseaseHistory;
+  }, [diseaseHistory, diseaseSearch]);
+
   return (
     <PageLayout className="bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -36,7 +56,7 @@ export default function HistoryPage() {
             <p className="text-gray-600">{t('historyTrackingDesc')}</p>
           </div>
 
-          <Tabs defaultValue="disease" className="space-y-6">
+          <Tabs value={selectedTab} onValueChange={(tab) => navigate(`/history?tab=${tab}`)} className="space-y-6">
             <TabsList className="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="disease" className="flex items-center gap-2">
                 <Scan className="size-4" />
@@ -51,20 +71,19 @@ export default function HistoryPage() {
             <TabsContent value="disease">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('diseaseHistory')}</CardTitle>
-                  <CardDescription>{t('diseaseHistoryDescription')}</CardDescription>
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><CardTitle>{t('diseaseHistory')}</CardTitle><CardDescription>{t('diseaseHistoryDescription')}</CardDescription></div><div className="relative w-full md:w-80"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" /><Input value={diseaseSearch} onChange={(event) => setDiseaseSearch(event.target.value)} placeholder="Search disease name..." className="pl-10" /></div></div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {loading ? (
                       <p className="text-gray-500">{t('loadingDiseaseHistory')}</p>
-                    ) : diseaseHistory.length > 0 ? diseaseHistory.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
-                        <img
-                          src={item.image_url || 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=100&h=100&fit=crop'}
-                          alt={item.prediction}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
+                    ) : filteredDiseaseHistory.length > 0 ? filteredDiseaseHistory.map((item) => (
+                      <div key={item.id} className="flex flex-col gap-4 p-4 border rounded-lg hover:bg-gray-50 sm:flex-row">
+                        {item.image_url.startsWith('video:') ? (
+                          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-green-100"><Video className="size-6 text-green-700" /></div>
+                        ) : (
+                          <DiseaseImage item={item} className="h-24 w-24 rounded-lg object-cover" />
+                        )}
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900">{item.prediction}</h3>
                           <div className="flex items-center gap-3 mt-1">
@@ -73,9 +92,10 @@ export default function HistoryPage() {
                             </Badge>
                             <span className="text-sm text-gray-500">{new Date(item.date).toLocaleString()}</span>
                           </div>
+                          <div className="mt-3 rounded-md bg-yellow-50 p-3 text-sm text-gray-700"><p className="mb-1 font-medium text-gray-900">{t('treatment')}</p><p className="whitespace-pre-wrap">{item.treatment}</p></div>
                         </div>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => setSelectedDisease(item)} aria-label={t('viewDetails')}>
                             <Eye className="size-4" />
                           </Button>
                           <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" disabled>
@@ -130,6 +150,11 @@ export default function HistoryPage() {
           </Tabs>
         </div>
       </div>
+      <Dialog open={Boolean(selectedDisease)} onOpenChange={(open) => !open && setSelectedDisease(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          {selectedDisease && <><DialogHeader><DialogTitle>{t('diseaseResult')}: {selectedDisease.prediction}</DialogTitle><DialogDescription>{new Date(selectedDisease.date).toLocaleString()}</DialogDescription></DialogHeader>{selectedDisease.image_url.startsWith('video:') ? <div className="flex h-64 items-center justify-center rounded-lg bg-green-100"><Video className="size-16 text-green-700" /></div> : <DiseaseImage item={selectedDisease} className="max-h-[55vh] w-full rounded-lg object-contain" />}<div className="grid gap-3 sm:grid-cols-2"><div className="rounded-lg bg-green-50 p-3"><p className="text-xs text-gray-600">{t('cropName')}</p><p className="font-semibold">{selectedDisease.crop_name || 'Not available for older records'}</p></div><div className="rounded-lg bg-blue-50 p-3"><p className="text-xs text-gray-600">{t('confidence')}</p><p className="font-semibold">{Number(selectedDisease.confidence)}%</p></div></div><div className="rounded-lg bg-yellow-50 p-4"><p className="mb-2 font-semibold">{t('treatment')}</p><p className="whitespace-pre-wrap text-sm text-gray-700">{selectedDisease.treatment}</p></div><div className="rounded-lg bg-gray-50 p-4"><p className="mb-2 font-semibold">AI analysis note</p><p className="text-sm text-gray-700">{selectedDisease.disclaimer || 'Not available for older records.'}</p></div><div className="rounded-lg bg-green-50 p-4"><p className="mb-2 font-semibold">{t('fertilizer')} {t('recommendations')}</p>{selectedDisease.fertilizer_recommendations.length ? selectedDisease.fertilizer_recommendations.map((recommendation, index) => <p key={index} className="mb-2 whitespace-pre-wrap text-sm text-gray-700">{recommendation}</p>) : <p className="text-sm text-gray-600">No linked fertilizer recommendation for this assessment.</p>}</div></>}
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

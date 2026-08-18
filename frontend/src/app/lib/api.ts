@@ -7,6 +7,7 @@ export interface UserProfile {
   first_name: string;
   last_name: string;
   phone: string;
+  avatar: string;
   role: string;
   created_at: string;
 }
@@ -54,17 +55,28 @@ export interface MarketPrice {
 export interface DiseaseHistory {
   id: string;
   image_url: string;
+  crop_name: string;
   prediction: string;
   confidence: string | number;
   treatment: string;
+  disclaimer: string;
+  fertilizer_recommendations: string[];
   date: string;
 }
 
 export interface ChatHistory {
   id: string;
+  conversation?: string | null;
   question: string;
   response: string;
   date: string;
+}
+
+export interface ChatConversation {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface WeatherForecastDay {
@@ -108,6 +120,8 @@ export interface LiveWeatherForecast {
 export interface DiseaseAnalysis extends DiseaseHistory {
   crop: string;
   disclaimer: string;
+  is_crop: boolean;
+  has_disease: boolean;
 }
 
 export interface SFAIChatResponse extends ChatHistory {
@@ -129,6 +143,7 @@ export interface FertilizerPlan {
   tips: string[];
   disclaimer: string;
   date: string;
+  trend: "up" | "down" | "same" | "new";
 }
 
 type ApiOptions = RequestInit & {
@@ -167,7 +182,7 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}) {
   const headers = new Headers(options.headers);
   const hasBody = options.body !== undefined;
 
-  if (hasBody && !headers.has("Content-Type")) {
+  if (hasBody && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -217,7 +232,7 @@ export const api = {
     apiRequest<MarketPrice[]>("/api/market-prices/", {
       token,
     }),
-  createMarketPrice: (token: string, payload: Omit<MarketPrice, "id" | "date">) =>
+  createMarketPrice: (token: string, payload: Omit<MarketPrice, "id" | "date" | "trend">) =>
     apiRequest<MarketPrice>("/api/market-prices/", {
       method: "POST",
       token,
@@ -245,17 +260,33 @@ export const api = {
     }),
   weatherForecast: (token: string, language: "en" | "bn") =>
     apiRequest<LiveWeatherForecast>(`/api/weather-data/forecast/?lang=${language}`, { token }),
-  analyzeDisease: (token: string, image_data: string, crop_hint = "", language: "en" | "bn" = "en") =>
+  analyzeDisease: (token: string, image_data: string, crop_hint = "", language: "en" | "bn" = "en", signal?: AbortSignal) =>
     apiRequest<DiseaseAnalysis>("/api/disease-history/analyze/", {
       method: "POST",
       token,
-      body: JSON.stringify({ image_data, crop_hint, language }),
+      body: JSON.stringify({ image_data, crop_hint, language }), signal,
     }),
-  askSFAI: (token: string, question: string) =>
+  analyzeDiseaseVideo: (token: string, video: File, crop_hint = "", signal?: AbortSignal) => {
+    const body = new FormData(); body.append("video", video); body.append("crop_hint", crop_hint);
+    return apiRequest<DiseaseAnalysis>("/api/disease-history/analyze-video/", { method: "POST", token, body, signal });
+  },
+  chatConversations: (token: string) =>
+    apiRequest<ChatConversation[]>("/api/chat-history/conversations/", { token }),
+  createChatConversation: (token: string, title = "New chat") =>
+    apiRequest<ChatConversation>("/api/chat-history/conversations/", {
+      method: "POST", token, body: JSON.stringify({ title }),
+    }),
+  chatConversationMessages: (token: string, conversationId: string) =>
+    apiRequest<ChatHistory[]>(`/api/chat-history/conversations/${conversationId}/messages/`, { token }),
+  updateChatConversation: (token: string, conversationId: string, title: string) =>
+    apiRequest<ChatConversation>(`/api/chat-history/conversations/${conversationId}/`, {
+      method: "PATCH", token, body: JSON.stringify({ title }),
+    }),
+  askSFAI: (token: string, question: string, conversation_id?: string) =>
     apiRequest<SFAIChatResponse>("/api/chat-history/ask/", {
       method: "POST",
       token,
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, conversation_id }),
     }),
   adminUsers: (token: string) =>
     apiRequest<AdminUser[]>("/api/admin/users/", { token }),
@@ -285,10 +316,10 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
-  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "", language: "en" | "bn" = "en") =>
+  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "", language: "en" | "bn" = "en", disease_id?: string) =>
     apiRequest<FertilizerPlan>("/api/fertilizer-recommendations/generate/", {
       method: "POST",
       token,
-      body: JSON.stringify({ crop_name, farm_context, language }),
+      body: JSON.stringify({ crop_name, farm_context, language, disease_id }),
     }),
 };

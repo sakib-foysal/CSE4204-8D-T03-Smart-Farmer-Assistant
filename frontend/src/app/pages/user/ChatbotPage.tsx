@@ -2,110 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import PageLayout from '../../components/layout/PageLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { AlertTriangle, Bot, Send, User } from 'lucide-react';
-import { api } from '../../lib/api';
+import { AlertTriangle, Bot, MessageSquare, Pencil, Plus, Send, User } from 'lucide-react';
+import { api, ChatConversation } from '../../lib/api';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+interface Message { role: 'user' | 'assistant'; content: string; }
 
 export default function ChatbotPage() {
-  const { t, language } = useLanguage();
-  const { token } = useAuth();
-  const greeting: Message = { role: 'assistant', content: t('greeting') };
-  const [messages, setMessages] = useState<Message[]>([greeting]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [serviceError, setServiceError] = useState('');
+  const { t } = useLanguage(); const { token } = useAuth();
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]); const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false); const [serviceError, setServiceError] = useState('');
   const messageEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!token) return;
-    api.chatHistory(token)
-      .then((history) => {
-        if (!history.length) return;
-        const loaded = history.slice().reverse().flatMap((item) => [
-          { role: 'user' as const, content: item.question },
-          { role: 'assistant' as const, content: item.response },
-        ]);
-        setMessages([greeting, ...loaded]);
-      })
-      .catch(() => {});
-  }, [token, language]);
+  useEffect(() => { if (token) api.chatConversations(token).then(setConversations).catch(() => setServiceError(t('aiUnavailable'))); }, [token, t]);
+  useEffect(() => { messageEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages, isTyping]);
+  const startNewChat = () => { setActiveConversationId(null); setMessages([]); setInputText(''); setServiceError(''); };
+  const openConversation = async (conversationId: string) => { if (!token || isTyping) return; setActiveConversationId(conversationId); setServiceError(''); try { const history = await api.chatConversationMessages(token, conversationId); setMessages(history.flatMap((item) => [{ role: 'user' as const, content: item.question }, { role: 'assistant' as const, content: item.response }])); } catch (error) { setServiceError(error instanceof Error ? error.message : t('aiUnavailable')); } };
+  const renameConversation = async (conversation: ChatConversation) => { if (!token) return; const title = window.prompt('Chat title', conversation.title)?.trim(); if (!title) return; try { const updated = await api.updateChatConversation(token, conversation.id, title.slice(0, 120)); setConversations((current) => current.map((item) => item.id === updated.id ? updated : item)); } catch (error) { setServiceError(error instanceof Error ? error.message : t('aiUnavailable')); } };
+  const handleSend = async () => { const question = inputText.trim(); if (!question || isTyping || !token) return; setMessages((previous) => [...previous, { role: 'user', content: question }]); setInputText(''); setServiceError(''); setIsTyping(true); try { const result = await api.askSFAI(token, question, activeConversationId ?? undefined); if (!result.response?.trim()) throw new Error(t('aiEmpty')); setMessages((previous) => [...previous, { role: 'assistant', content: result.response }]); if (!activeConversationId && result.conversation) { setActiveConversationId(result.conversation); setConversations(await api.chatConversations(token)); } } catch (error) { setServiceError(error instanceof Error ? error.message : t('aiUnavailable')); } finally { setIsTyping(false); } };
 
-  useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [messages, isTyping]);
-
-  const handleSend = async () => {
-    const question = inputText.trim();
-    if (!question || isTyping) return;
-
-    const userMessage: Message = { role: 'user', content: question };
-    setMessages((previous) => [...previous, userMessage]);
-    setInputText('');
-    setServiceError('');
-    setIsTyping(true);
-
-    try {
-      if (!token) throw new Error(t('loginAgain'));
-      const result = await api.askSFAI(token, question);
-      const answer = result.response?.trim();
-      if (!answer) throw new Error(t('aiEmpty'));
-      setMessages((previous) => [...previous, { role: 'assistant', content: answer }]);
-    } catch (error) {
-      setServiceError(error instanceof Error ? error.message : t('aiUnavailable'));
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  return (
-    <PageLayout className="bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-8">
-            <h1 className="mb-2 text-3xl font-bold text-gray-900">{t('aiChatbot')}</h1>
-            <p className="text-gray-600">{t('smartChatbotDesc')}</p>
-          </div>
-
-          <Card className="h-[calc(100dvh-14rem)] min-h-[30rem] max-h-[48rem]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Bot className="size-6 text-green-600" />{t('smartChatbot')}</CardTitle>
-              <CardDescription>{t('chatbotLiveDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex h-[calc(100%-8rem)] min-h-0 flex-col">
-              {serviceError && (
-                <div className="mb-4 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="alert">
-                  <AlertTriangle className="mt-0.5 size-4 shrink-0" /><span>{serviceError}</span>
-                </div>
-              )}
-              <div className="mb-4 min-h-0 flex-1 space-y-4 overflow-y-auto scroll-smooth pr-1">
-                {messages.map((message, index) => (
-                  <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${message.role === 'user' ? 'bg-blue-600' : 'bg-green-600'}`}>
-                      {message.role === 'user' ? <User className="size-4 text-white" /> : <Bot className="size-4 text-white" />}
-                    </div>
-                    <div className={`max-w-[70%] rounded-lg p-3 ${message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
-                      <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                    </div>
-                  </div>
-                ))}
-                {isTyping && <div className="flex gap-3"><div className="flex size-8 items-center justify-center rounded-full bg-green-600"><Bot className="size-4 text-white" /></div><div className="rounded-lg bg-gray-100 p-3 text-sm text-gray-600">{t('aiPreparing')}</div></div>}
-                <div ref={messageEndRef} />
-              </div>
-              <div className="flex gap-2">
-                <Input value={inputText} onChange={(event) => setInputText(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && handleSend()} placeholder={t('askQuestion')} className="flex-1" maxLength={1200} />
-                <Button onClick={handleSend} disabled={isTyping || !inputText.trim()} className="bg-green-600 hover:bg-green-700" aria-label={t('sendMessage')}><Send className="size-4" /></Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </PageLayout>
-  );
+  const activeConversation = conversations.find((conversation) => conversation.id === activeConversationId);
+  return <PageLayout className="bg-gray-50"><div className="container mx-auto px-4 py-6"><div className="mx-auto max-w-6xl"><div className="mb-5"><h1 className="text-3xl font-bold text-gray-900">{t('aiChatbot')}</h1><p className="text-gray-600">{t('smartChatbotDesc')}</p></div><div className="grid h-[calc(100dvh-12rem)] min-h-[34rem] grid-cols-1 overflow-hidden rounded-xl border bg-white shadow-sm md:grid-cols-[15rem_1fr]"><aside className="flex min-h-0 flex-col border-b bg-gray-50 p-3 md:border-b-0 md:border-r"><Button onClick={startNewChat} className="mb-3 w-full bg-green-600 hover:bg-green-700"><Plus className="mr-2 size-4" />New chat</Button><div className="min-h-0 flex-1 space-y-1 overflow-y-auto">{conversations.map((conversation) => <div key={conversation.id} className={`flex rounded-lg text-sm ${activeConversationId === conversation.id ? 'bg-green-100 text-green-900' : 'hover:bg-gray-200'}`}><button onClick={() => void openConversation(conversation.id)} className="min-w-0 flex-1 px-3 py-2 text-left"><MessageSquare className="mr-2 inline size-4" /><span className="line-clamp-1">{conversation.title}</span></button><button onClick={() => void renameConversation(conversation)} className="px-2" aria-label="Edit chat title"><Pencil className="size-3" /></button></div>)}</div></aside><section className="flex min-h-0 flex-col"><div className="border-b p-4"><div className="flex items-center gap-2 font-semibold"><Bot className="size-5 text-green-600" />{activeConversation?.title || 'New chat'}{activeConversation && <button onClick={() => void renameConversation(activeConversation)} aria-label="Edit chat title"><Pencil className="size-4 text-gray-500" /></button>}</div></div><div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">{messages.length === 0 && <div className="mx-auto mt-16 max-w-md text-center text-gray-500"><Bot className="mx-auto mb-3 size-12 text-green-600" /><p>{t('greeting')}</p></div>}{serviceError && <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle className="size-4 shrink-0" />{serviceError}</div>}{messages.map((message, index) => <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}><div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${message.role === 'user' ? 'bg-blue-600' : 'bg-green-600'}`}>{message.role === 'user' ? <User className="size-4 text-white" /> : <Bot className="size-4 text-white" />}</div><p className={`max-w-[78%] whitespace-pre-wrap rounded-xl p-3 text-sm ${message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>{message.content}</p></div>)}{isTyping && <div className="text-sm text-gray-500">{t('aiPreparing')}</div>}<div ref={messageEndRef} /></div><div className="flex gap-2 border-t p-4"><Input value={inputText} onChange={(event) => setInputText(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && void handleSend()} placeholder={t('askQuestion')} maxLength={1200} /><Button onClick={() => void handleSend()} disabled={isTyping || !inputText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="size-4" /></Button></div></section></div></div></div></PageLayout>;
 }

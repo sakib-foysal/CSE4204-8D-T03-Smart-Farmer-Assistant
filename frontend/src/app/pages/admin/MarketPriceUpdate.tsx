@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import PageLayout from '../../components/layout/PageLayout';
@@ -8,7 +8,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { Plus, Edit, Trash2, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, MarketPrice } from '../../lib/api';
 
@@ -18,6 +18,7 @@ export default function MarketPriceUpdate() {
   const [isAdding, setIsAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [marketPrices, setMarketPrices] = useState<MarketPrice[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [newPrice, setNewPrice] = useState({
     crop_name: '',
     price: '',
@@ -31,6 +32,16 @@ export default function MarketPriceUpdate() {
     if (!token) return;
     api.marketPrices(token).then(setMarketPrices).catch(() => {});
   }, [token]);
+
+  const filteredPrices = useMemo(() => {
+    const query = searchTerm.toLowerCase().replace(/[৳ টাকা\s,]/g, '');
+    if (!query) return marketPrices;
+
+    return marketPrices.filter((marketPrice) =>
+      [marketPrice.crop_name, marketPrice.region].some((value) => String(value).toLowerCase().includes(searchTerm.toLowerCase()))
+        || Number(marketPrice.price).toFixed(2).includes(query),
+    );
+  }, [marketPrices, searchTerm]);
 
   const handleAddPrice = async () => {
     if (!token) return;
@@ -148,17 +159,28 @@ export default function MarketPriceUpdate() {
 
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <CardTitle>{t('marketPrices')}</CardTitle>
                   <CardDescription>{t('marketPriceUpdate')}</CardDescription>
                 </div>
-                {!isAdding && (
-                  <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-700">
-                    <Plus className="size-4 mr-2" />
-                    {t('price')}
-                  </Button>
-                )}
+                <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+                  <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      placeholder={t('search')}
+                      value={searchTerm}
+                      onChange={(event) => setSearchTerm(event.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  {!isAdding && (
+                    <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-700">
+                      <Plus className="size-4 mr-2" />
+                      {t('price')}
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -175,7 +197,7 @@ export default function MarketPriceUpdate() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {marketPrices.length > 0 ? marketPrices.map((price) => (
+                    {filteredPrices.length > 0 ? filteredPrices.map((price) => (
                       <TableRow key={price.id}>
                         <TableCell className="font-medium">#{price.id.slice(0, 8)}</TableCell>
                         <TableCell className="font-medium">{price.crop_name}</TableCell>

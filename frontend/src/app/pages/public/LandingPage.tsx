@@ -161,16 +161,17 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">{t('about')}</h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Smart Farmer Assistant is an AI-powered platform designed to help Bangladeshi farmers make better agricultural decisions. 
-              Agriculture accounts for a significant share of Bangladesh's GDP, yet farmers face persistent challenges — crop diseases 
-              cause 20–30% annual yield loss, improper fertilizer use degrades soil quality, and access to qualified agricultural 
-              extension officers remains limited in rural areas.
+            <p className="text-lg text-gray-600 mb-6 text-justify">
+              Smart Farmer Assistant is an AI-powered platform designed to help farmers around the world, including those in Bangladesh,
+              make better agricultural decisions. Agriculture plays a vital role in economies and food security worldwide, yet farmers
+              face persistent challenges — crop diseases, improper fertilizer use, climate change, extreme weather, fluctuating market
+              prices, water scarcity, soil degradation, and limited access to qualified agricultural experts remain major challenges for
+              farmers globally.
             </p>
-            <p className="text-lg text-gray-600">
-              Our platform integrates AI image classification, an SF AI-powered chatbot, real-time weather forecasting, flood alerts, 
-              live market prices, and intelligent fertilizer recommendations into a single responsive platform accessible from any 
-              smartphone or web browser.
+            <p className="text-lg text-gray-600 mb-6 text-justify">
+              Our platform integrates AI image classification, an SF AI-powered chatbot, real-time weather forecasting, flood alerts,
+              live market prices, and intelligent fertilizer recommendations into a single responsive platform designed to support farmers
+              across different regions, crops, and agricultural conditions, accessible from any smartphone or web browser.
             </p>
           </div>
         </div>

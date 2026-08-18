@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from apps.chatbot.sf_ai_service import SFAIServiceError, generate_fertilizer_plan
 from apps.fertilizer.models import FertilizerRecommendation
+from apps.disease_detection.models import DiseaseHistory
 from apps.fertilizer.serializers import FertilizerGenerateSerializer, FertilizerRecommendationSerializer
 from apps.users.permissions import IsJWTAuthenticated
 
@@ -58,6 +59,11 @@ class FertilizerGenerateAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         crop_name = serializer.validated_data["crop_name"]
         language = serializer.validated_data["language"]
+        disease = None
+        if serializer.validated_data.get("disease_id"):
+            disease = DiseaseHistory.objects.filter(id=serializer.validated_data["disease_id"], user=request.user).first()
+            if disease is None:
+                return Response({"detail": "Disease assessment was not found."}, status=status.HTTP_404_NOT_FOUND)
         try:
             plan = generate_fertilizer_plan(
                 crop_name,
@@ -81,6 +87,7 @@ class FertilizerGenerateAPIView(APIView):
             tips = plan["tips"]
         saved = FertilizerRecommendation.objects.create(
             user=request.user,
+            disease=disease,
             crop_name=plan.get("crop") or crop_name,
             suggestion="\n".join(f"{item.get('name', 'Fertilizer')}: {item.get('amount', '')}. {item.get('timing', '')}" for item in fertilizers if isinstance(item, dict)),
         )
