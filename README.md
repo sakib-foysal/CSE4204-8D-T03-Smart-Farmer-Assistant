@@ -644,4 +644,4 @@ This project is developed for academic purposes under CSE4204 AI-Based Software 
 
 ### Made with ❤️ by Team CSE4204-8D-T03
 
-**Last Updated:** 6th July 2026 (Week 7 Submission)
+**Last Updated:** 6th July 2026 (Week 8 Submission)
