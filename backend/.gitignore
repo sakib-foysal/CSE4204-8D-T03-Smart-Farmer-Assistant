@@ -10,6 +10,8 @@ __pycache__/
 
 # Virtual environment
 venv/
+backend/venv/
+env/
 .venv/
 
 # Django / local data
