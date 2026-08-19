@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Leaf } from 'lucide-react';
+import { Eye, EyeOff, Leaf } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,14 +71,20 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password">{t('password')}</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-green-600">
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
               </div>
 
               {error && (
@@ -96,10 +103,6 @@ export default function LoginPage() {
                   {t('signUp')}
                 </Link>
               </div>
-              
-              <p className="text-xs text-gray-500 text-center">
-                {t('backendAccount')}
-              </p>
             </form>
           </CardContent>
         </Card>

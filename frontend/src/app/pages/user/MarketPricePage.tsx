@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
-import { Search, TrendingUp, TrendingDown } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { api, MarketPrice } from '../../lib/api';
 
 export default function MarketPricePage() {
@@ -26,10 +26,13 @@ export default function MarketPricePage() {
       .finally(() => setLoading(false));
   }, [token, t]);
 
-  const filteredPrices = marketPrices.filter(item =>
-    item.crop_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.region.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const normalizedSearch = searchTerm.toLowerCase().replace(/[৳ টাকা\s,]/g, '');
+  const filteredPrices = marketPrices.filter((item) => {
+    const normalizedPrice = Number(item.price).toFixed(2);
+    return item.crop_name.toLowerCase().includes(searchTerm.toLowerCase())
+      || item.region.toLowerCase().includes(searchTerm.toLowerCase())
+      || normalizedPrice.includes(normalizedSearch);
+  });
 
   return (
     <PageLayout className="bg-gray-50">
@@ -50,7 +53,7 @@ export default function MarketPricePage() {
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
                 <Input
-                  placeholder={t('searchCropRegion')}
+                  placeholder={t('searchCropPriceRegion')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -82,7 +85,7 @@ export default function MarketPricePage() {
                         </TableCell>
                       </TableRow>
                     ) : filteredPrices.length > 0 ? (
-                      filteredPrices.map((item, index) => (
+                      filteredPrices.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">
                             <div>
@@ -94,15 +97,20 @@ export default function MarketPricePage() {
                           <TableCell>{item.unit}</TableCell>
                           <TableCell>{item.region}</TableCell>
                           <TableCell>
-                            {index % 2 === 0 ? (
+                            {item.trend === 'up' ? (
                               <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
                                 <TrendingUp className="size-3 mr-1" />
-                                {t('live')}
+                                {t('priceUp')}
                               </Badge>
-                            ) : (
+                            ) : item.trend === 'down' ? (
                               <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200">
                                 <TrendingDown className="size-3 mr-1" />
-                                {t('live')}
+                                {t('priceDown')}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200">
+                                <Minus className="size-3 mr-1" />
+                                {item.trend === 'same' ? t('priceUnchanged') : t('newPrice')}
                               </Badge>
                             )}
                           </TableCell>

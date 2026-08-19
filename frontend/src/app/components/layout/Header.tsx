@@ -1,9 +1,10 @@
 import { Link, useNavigate, useLocation } from '../../../router-shim';
 import { Button } from '../ui/button';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Leaf, Menu, X, Globe } from 'lucide-react';
+import { Leaf, Menu, X, Globe, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export default function Header() {
   const { t, toggleLanguage } = useLanguage();
@@ -83,8 +84,11 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate('/profile')}>
-                  {t('profile')}
+                <Button variant="outline" size="icon" onClick={() => navigate('/profile')} aria-label={t('profile')} title={t('profile')} className="rounded-full">
+                  <Avatar className="size-7">
+                    {user?.avatar && <AvatarImage src={user.avatar} alt={t('profile')} />}
+                    <AvatarFallback className="bg-green-100 text-green-800"><UserRound className="size-4" /></AvatarFallback>
+                  </Avatar>
                 </Button>
                 <Button size="sm" onClick={handleLogout} variant="destructive">
                   {t('logout')}

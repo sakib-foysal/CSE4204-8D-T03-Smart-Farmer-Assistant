@@ -2,13 +2,19 @@ from django.test import SimpleTestCase, override_settings
 
 from types import SimpleNamespace
 
-from apps.chatbot.sf_ai_service import SYSTEM_PROMPT, _fallback_farming_answer, _is_complete_answer, _model_id, _request_session
+from apps.chatbot.sf_ai_service import SYSTEM_PROMPT, _fallback_farming_answer, _is_complete_answer, _model_id, _requested_language, _request_session
 
 
 class SFAIServiceTests(SimpleTestCase):
     @override_settings(GEMINI_MODEL="Gemini-3.5-flash")
     def test_model_name_is_normalized_without_editing_env(self):
         self.assertEqual(_model_id(), "gemini-3.5-flash")
+
+    def test_chat_response_language_follows_question_or_explicit_request(self):
+        self.assertEqual(_requested_language("আমার ধানের পাতায় দাগ কেন?"), "bn")
+        self.assertEqual(_requested_language("amar dhan gach er pata holud hoye jacche"), "bn")
+        self.assertEqual(_requested_language("Why are my rice leaves turning yellow?"), "en")
+        self.assertEqual(_requested_language("আমার ধানের পাতার সমস্যা ইংরেজিতে বলুন"), "en")
 
     def test_transient_requests_are_retried(self):
         session = _request_session()

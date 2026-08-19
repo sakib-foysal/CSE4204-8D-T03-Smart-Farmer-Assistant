@@ -23,9 +23,17 @@ class DiseaseHistory(models.Model):
         blank=False
     )
 
+    crop_name = models.CharField(max_length=100, blank=True, default="")
+
+    disclaimer = models.TextField(blank=True, default="")
+
+    image_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
+
     prediction = models.CharField(
         max_length=150
     )
+
+    prediction_key = models.CharField(max_length=150, blank=True, default="", db_index=True)
 
     confidence = models.DecimalField(
         max_digits=5,

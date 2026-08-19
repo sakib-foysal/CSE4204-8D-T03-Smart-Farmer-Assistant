@@ -34,9 +34,9 @@ export default function Dashboard() {
   }, [token]);
 
   const stats = [
-    { label: t('diseaseDetection'), value: loading ? '...' : String(diseaseHistory.length), icon: <Scan className="size-5" />, color: 'text-blue-600' },
-    { label: t('aiChatbot'), value: loading ? '...' : String(chatHistory.length), icon: <MessageSquare className="size-5" />, color: 'text-green-600' },
-    { label: t('fertilizer'), value: loading ? '...' : String(fertilizerHistory.length), icon: <Droplets className="size-5" />, color: 'text-purple-600' },
+    { label: t('diseaseDetection'), value: loading ? '...' : String(new Set(diseaseHistory.map(item => `${item.image_url}|${item.prediction.trim().toLocaleLowerCase()}`)).size), icon: <Scan className="size-5" />, color: 'text-blue-600', path: '/history?tab=disease' },
+    { label: t('aiChatbot'), value: loading ? '...' : String(chatHistory.length), icon: <MessageSquare className="size-5" />, color: 'text-green-600', path: '/chatbot' },
+    { label: t('fertilizer'), value: loading ? '...' : String(fertilizerHistory.length), icon: <Droplets className="size-5" />, color: 'text-purple-600', path: '/fertilizer?history=1' },
   ];
 
   const quickActions = [
@@ -109,12 +109,11 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {t('welcome')}, {user?.first_name || user?.username || t('farmer')}!
           </h1>
-          <p className="text-gray-600">{t('dashboard')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <Card key={index}>
+            <Card key={index} role="button" tabIndex={0} onClick={() => navigate(stat.path)} onKeyDown={(event) => event.key === 'Enter' && navigate(stat.path)} className="cursor-pointer transition-all hover:border-green-500 hover:bg-green-50 hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>

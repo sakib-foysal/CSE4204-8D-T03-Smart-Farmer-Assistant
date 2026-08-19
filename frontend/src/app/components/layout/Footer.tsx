@@ -1,6 +1,6 @@
 import { Link } from '../../../router-shim';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Leaf, Mail, Phone, MapPin, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Leaf, Mail, Phone, MapPin, Facebook, Linkedin } from 'lucide-react';
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -22,13 +22,10 @@ export default function Footer() {
               {t('tagline')}
             </p>
             <div className="flex gap-3">
-              <a href="#" className="hover:text-green-500 transition-colors">
+              <a href="https://www.facebook.com/@ushan.sakib" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-green-500 transition-colors">
                 <Facebook className="size-5" />
               </a>
-              <a href="#" className="hover:text-green-500 transition-colors">
-                <Twitter className="size-5" />
-              </a>
-              <a href="#" className="hover:text-green-500 transition-colors">
+              <a href="https://www.linkedin.com/in/sayed-tauhidul-islam-078554326/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-green-500 transition-colors">
                 <Linkedin className="size-5" />
               </a>
             </div>
@@ -50,10 +47,10 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">{t('about')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-green-500 transition-colors">{t('footerAbout')}</a></li>
-              <li><a href="#" className="hover:text-green-500 transition-colors">{t('footerContact')}</a></li>
-              <li><a href="#" className="hover:text-green-500 transition-colors">{t('footerPrivacy')}</a></li>
-              <li><a href="#" className="hover:text-green-500 transition-colors">{t('footerTerms')}</a></li>
+              <li><a href="/#about" className="hover:text-green-500 transition-colors">{t('footerAbout')}</a></li>
+              <li><a href="mailto:sakibfoysal2@gmail.com" className="hover:text-green-500 transition-colors">{t('footerContact')}</a></li>
+              <li><Link to="/privacy-policy" className="hover:text-green-500 transition-colors">{t('footerPrivacy')}</Link></li>
+              <li><Link to="/terms-of-service" className="hover:text-green-500 transition-colors">{t('footerTerms')}</Link></li>
             </ul>
           </div>
 
@@ -62,19 +59,27 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">{t('footerContact')}</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
-                <MapPin className="size-4 mt-1 flex-shrink-0" />
-                <span>{t('address')}</span>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Northern+University+of+Business+%26+Technology%2C+Khulna%2C+Bangladesh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open location in Google Maps"
+                  className="flex items-start gap-2 hover:text-green-500 transition-colors"
+                >
+                  <MapPin className="size-4 mt-1 flex-shrink-0" />
+                  <span>{t('address')}</span>
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="size-4 flex-shrink-0" />
-                <a href="mailto:support@smartfarmer.com" className="hover:text-green-500 transition-colors">
-                  support@smartfarmer.com
+                <a href="mailto:sakibfoysal2@gmail.com" className="hover:text-green-500 transition-colors">
+                  sakibfoysal2@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="size-4 flex-shrink-0" />
-                <a href="tel:+8801700000000" className="hover:text-green-500 transition-colors">
-                  +880 1700-000000
+                <a href="tel:01306753144" className="hover:text-green-500 transition-colors">
+                  01306753144
                 </a>
               </li>
             </ul>

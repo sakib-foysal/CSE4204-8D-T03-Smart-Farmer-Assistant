@@ -6,9 +6,22 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Leaf } from 'lucide-react';
+import { Eye, EyeOff, Leaf } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
+
+const phoneCountries = [
+  { code: '+880', shortName: 'BD', digits: 10, example: '1712345678' },
+  { code: '+1', shortName: 'US/CA', digits: 10, example: '2025550123' },
+  { code: '+91', shortName: 'IN', digits: 10, example: '9876543210' },
+  { code: '+92', shortName: 'PK', digits: 10, example: '3012345678' },
+  { code: '+44', shortName: 'UK', digits: 10, example: '7911123456' },
+  { code: '+81', shortName: 'JP', digits: 10, example: '9012345678' },
+  { code: '+61', shortName: 'AU', digits: 9, example: '412345678' },
+  { code: '+971', shortName: 'UAE', digits: 9, example: '501234567' },
+  { code: '+966', shortName: 'KSA', digits: 9, example: '501234567' },
+  { code: '+65', shortName: 'SG', digits: 8, example: '81234567' },
+];
 
 export default function RegisterPage() {
   const { t } = useLanguage();
@@ -22,11 +35,21 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
+  const [countryCode, setCountryCode] = useState('+880');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const selectedCountry = phoneCountries.find((country) => country.code === countryCode) ?? phoneCountries[0];
+
+  const handleCountryChange = (value: string) => {
+    setCountryCode(value);
+    handleChange('phone', '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +63,12 @@ export default function RegisterPage() {
 
     if (!emailPattern.test(formData.email)) {
       setError(t('validEmail'));
+      return;
+    }
+
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length !== selectedCountry.digits) {
+      setError(t('phoneDigitsError').replace('{count}', String(selectedCountry.digits)).replace('{code}', selectedCountry.code));
       return;
     }
 
@@ -64,7 +93,7 @@ export default function RegisterPage() {
         password: formData.password,
         first_name: firstName,
         last_name: lastNameParts.join(' '),
-        phone: formData.phone.replace(/[\s-]/g, ''),
+        phone: `${countryCode}${phoneDigits}`,
         role: 'farmer',
       });
       toast.success(t('registrationSuccessful'));
@@ -129,38 +158,66 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="phone">{t('phone')}</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+880 1700-000000"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  required
-                />
+                <div className="flex gap-2">
+                  <select
+                    aria-label={t('countryCode')}
+                    value={countryCode}
+                    onChange={(event) => handleCountryChange(event.target.value)}
+                    className="flex h-9 w-36 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-sm"
+                  >
+                    {phoneCountries.map((country) => (
+                      <option key={country.code} value={country.code}>{country.shortName} ({country.code})</option>
+                    ))}
+                  </select>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={selectedCountry.digits}
+                    placeholder={selectedCountry.example}
+                    value={formData.phone}
+                    onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, '').slice(0, selectedCountry.digits))}
+                    required
+                  />
+                </div>
+                <p className="text-xs text-gray-500">{t('phoneDigitsHint').replace('{code}', countryCode).replace('{count}', String(selectedCountry.digits))}</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">{t('password')}</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    className="pr-10"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-green-600">
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                    className="pr-10"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowConfirmPassword(value => !value)} aria-label={showConfirmPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-green-600">
+                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
               </div>
 
               {error && (
