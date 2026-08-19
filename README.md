@@ -121,15 +121,16 @@ The main goals of this system are:
 
 | Feature | Description | Status |
 |-----------|-------------|--------|
-| AI Disease Detection | Detect crop diseases from uploaded images | In Progress (60%) |
-| AI Chat Assistant | Farming guidance using Gemini AI | Database Ready |
+| AI Disease Detection | Detect crop diseases from uploaded images | ✅ Completed |
+| AI Chat Assistant | Farming guidance using Gemini AI | Database Ready | ✅ Completed |
 | Weather Alerts | Weather and flood notifications | ✅ Frontend Completed |
-| Fertilizer Recommendation | Smart fertilizer suggestions | Database Ready |
-| Market Price Tracking | Live crop market prices | In Progress (80%) |
+| Fertilizer Recommendation | Smart fertilizer suggestions | Database Ready | ✅ Completed |
+| Market Price Tracking | Live crop market prices | ✅ Completed |
 | User Authentication | Login & Registration system | ✅ Completed |
 | Dashboard | User management panel | ✅ Completed |
-| Bangla Support | Native Bangla interaction | Planned |
+| Bangla Support | Native Bangla interaction | ✅ Completed |
 | Responsive Design | Mobile-friendly UI | ✅ Completed |
+| Mobile app | A mobile application for farmers to access the system on-the-go | Planned |
 
 ---
 
@@ -169,13 +170,13 @@ After research, the team identified:
 
 This project introduces:
 
-✅ Bangladesh-focused agriculture solution
+✅ Bangladesh & Global-focused agriculture solution
 
 ✅ Bangla language support
 
 ✅ AI-powered disease detection
 
-✅ Intelligent recommendations
+✅ Intelligent recommendations for fertilizer usage
 
 ✅ Mobile-first design
 
@@ -253,58 +254,6 @@ This project introduces:
 
 ---
 
-# 📁 Project Folder Structure
-
-```bash
-CSE4204-8D-T03-Smart-Farmer-Assistant/
-│
-├── frontend/
-│   └── src/
-│       └── app/
-│           └── pages/
-│               ├── admin/
-│               │   ├── AdminDashboard.tsx
-│               │   ├── MarketPriceUpdate.tsx
-│               │   └── UserManagement.tsx
-│               ├── public/
-│               │   ├── LandingPage.tsx
-│               │   ├── LoginPage.tsx
-│               │   └── RegisterPage.tsx
-│               └── user/
-│                   ├── ChatbotPage.tsx
-│                   ├── Dashboard.tsx
-│                   ├── DiseaseDetectionPage.tsx
-│                   ├── FertilizerPage.tsx
-│                   ├── HistoryPage.tsx
-│                   ├── MarketPricePage.tsx
-│                   ├── ProfilePage.tsx
-│                   └── WeatherPage.tsx
-│
-├── backend/
-│   ├── apps/
-│   │   ├── users/          # User authentication & profiles
-│   │   ├── chatbot/        # Chatbot history
-│   │   ├── disease_detection/  # Disease detection API
-│   │   ├── fertilizer/     # Fertilizer recommendations
-│   │   ├── market/         # Market price tracking
-│   │   └── weather/        # Weather data management
-│   ├── config/             # Django settings
-│   ├── manage.py
-│   └── requirements.txt
-│
-├── ai_model/
-│   └── [ML models and training scripts]
-│
-├── docs/
-│   ├── database-design.pdf
-│   └── backend-progress.pdf
-│
-├── README.md
-├── .gitignore
-└── LICENSE
-```
-
----
 
 # 📊 Database Design (Week 6)
 
@@ -429,13 +378,13 @@ Responsive features include a hamburger menu on mobile vs. full navbar on deskto
 | Authentication Pages | Complete | 100% |
 | Main Dashboard | Complete | 100% |
 | API Integration | Complete | 100% |
-| Crop Market Page | In Progress | 80% |
+| Crop Market Page | In Progress | 100% |
 | Weather Dashboard | Complete | 100% |
-| Disease Detection | In Progress | 60% |
-| Recommendations Engine | In Progress | 90% |
+| Disease Detection | In Progress | 100% |
+| Recommendations Engine | In Progress | 100% |
 | User Profile Management | Complete | 100% |
-| Admin Panel | In Progress | 30% |
-| Testing & Optimization | In Progress | 95% |
+| Admin Panel | In Progress | 100% |
+| Testing & Optimization | In Progress | 100% |
 
 ---
 
@@ -645,3 +594,98 @@ This project is developed for academic purposes under CSE4204 AI-Based Software 
 ### Made with ❤️ by Team CSE4204-8D-T03
 
 **Last Updated:** 6th July 2026 (Week 8 Submission)
+
+---
+
+# Week 09 Progress and Integration Update
+
+This section is added for the Week 09 progress review. The project has moved from separate modules to an integrated application where the frontend, backend, database, authentication, and AI services work together in the main user workflows.
+
+## Feature Completion Checklist
+
+| Major Feature | Week 09 Status | Current Implementation |
+|---|---|---|
+| User registration, login, logout, and protected access | Completed | Django APIs, bearer-token authentication, password hashing, token revocation, and frontend session handling are integrated. |
+| User profile and avatar | Completed | Authenticated users can view and update their profile information. |
+| Farmer dashboard | Completed | The dashboard links users to all major farmer workflows. |
+| AI farming chat | Completed | Users submit questions from the frontend; the backend processes requests, stores conversations, and returns AI/fallback responses. |
+| Image-based disease detection | Completed | Crop images are analyzed through the backend, with result/history storage and localized guidance. |
+| Video-based disease analysis | In Progress | Video upload and analysis endpoint are implemented; further model-quality and real-device validation remain. |
+| Fertilizer recommendation | Completed | Crop and disease context can generate and save fertilizer plans. |
+| Weather forecast and farming alerts | Completed | Users can access forecast data and weather/flood-related farming alerts. |
+| Market-price information | Completed | Farmers can view market prices; administrators can manage price records. |
+| Admin dashboard and user management | Completed | Admin-only screens and APIs provide dashboard statistics and user management. |
+| Bangla and English support | Completed | Fixed UI text and AI-related requests support both language modes. |
+| Responsive design | Completed | The primary pages include responsive navigation and layouts. |
+| Production deployment | Not Started | Live deployment and production verification remain outside the current Week 09 scope. |
+| Comprehensive regression and model-accuracy testing | In Progress | Application-level tests exist; expanded browser, load, and model-accuracy testing remain for the next phase. |
+
+## Frontend-Backend-Database Integration Status
+
+- The React frontend calls Django REST APIs for registration, login, logout, profile updates, chat history, disease history, fertilizer recommendations, weather data, market prices, and administrative operations.
+- PostgreSQL-backed Django models store user accounts, revoked tokens, chat conversations, disease analyses, fertilizer recommendations, weather records, and market-price data.
+- Protected requests use Authorization: Bearer token authentication, and users can only access their own protected records.
+- Form validation and API failures are shown as understandable user-facing feedback rather than raw technical errors.
+
+## AI Integration Status
+
+AI features are connected to real application workflows:
+
+- **Disease analysis:** POST /api/disease-history/analyze/ accepts crop-image data, and POST /api/disease-history/analyze-video/ supports video analysis.
+- **Fertilizer plan:** POST /api/fertilizer-recommendations/generate/ produces a crop/disease-aware fertilizer plan.
+- **Farming assistant:** POST /api/chat-history/ask/ processes farming questions and saves conversation history.
+- **Language support:** supported AI requests use English (en) or Bangla (bn) context.
+- **Error handling:** provider/API failures use user-friendly fallback guidance where supported, while API credentials stay in environment variables.
+
+## Major End-to-End Workflows
+
+### Farmer workflow
+
+1. Register or log in.
+2. Open the protected dashboard.
+3. Choose disease detection, fertilizer guidance, AI chat, weather, market prices, or history.
+4. Submit an image, video, or farming question when required.
+5. The frontend sends an authenticated request to the Django backend.
+6. The backend processes database and AI operations.
+7. The user receives a result, actionable guidance, and understandable error/fallback feedback in the selected language.
+
+### Administrator workflow
+
+1. Log in with an administrator account.
+2. Open the admin dashboard.
+3. Review database-backed activity and user statistics.
+4. Manage users and market-price entries through protected admin features.
+
+## Week 09 API Summary
+
+| Area | Main Endpoints |
+|---|---|
+| Health | GET /api/health/ |
+| Authentication | POST /api/register/, POST /api/login/, POST /api/logout/, GET/PUT /api/profile/ |
+| Chat | GET/POST /api/chat-history/, POST /api/chat-history/ask/, conversation endpoints under /api/chat-history/conversations/ |
+| Disease detection | GET/POST /api/disease-history/, POST /api/disease-history/analyze/, POST /api/disease-history/analyze-video/ |
+| Fertilizer | GET/POST /api/fertilizer-recommendations/, POST /api/fertilizer-recommendations/generate/ |
+| Weather | GET/POST /api/weather-data/, GET /api/weather-data/forecast/ |
+| Market prices | GET/POST /api/market-prices/ |
+| Administration | GET /api/admin/dashboard/, GET /api/admin/users/, PATCH/DELETE /api/admin/users/{id}/ |
+
+## Week 09 Testing Focus
+
+Before the progress review, the following visible workflows should be tested:
+
+- new-user registration, existing-user login, logout, and protected pages;
+- profile update and restored user session;
+- disease-image submission, result display, and history;
+- fertilizer-plan generation using crop/disease context;
+- AI chat, saved conversations, and AI-service failure handling;
+- weather forecast, alerts, and language switching;
+- market-price viewing and administrator price management;
+- invalid input, missing fields, unauthorized requests, and unavailable external services;
+- mobile navigation and responsive layouts.
+
+## Remaining Work
+
+The next phase focuses on production deployment, broader regression testing, video/disease model-quality validation, final screenshots, and final project documentation.
+
+**Week 09 Update Date:** 19 August 2026
+

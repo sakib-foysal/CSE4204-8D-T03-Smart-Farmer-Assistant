@@ -25,7 +25,7 @@ export default function Footer() {
               <a href="https://www.facebook.com/@ushan.sakib" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-green-500 transition-colors">
                 <Facebook className="size-5" />
               </a>
-              <a href="https://www.linkedin.com/in/sayed-tauhidul-islam-078554326/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-green-500 transition-colors">
+              <a href="https://www.linkedin.com/in/sakib-foysal/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-green-500 transition-colors">
                 <Linkedin className="size-5" />
               </a>
             </div>
@@ -79,7 +79,7 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <Phone className="size-4 flex-shrink-0" />
                 <a href="tel:01306753144" className="hover:text-green-500 transition-colors">
-                  01306753144
+                  +880 1306-753144
                 </a>
               </li>
             </ul>
