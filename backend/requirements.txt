@@ -37,7 +37,7 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 ml_dtypes==0.5.4
 namex==0.1.0
-numpy==2.4.6
+numpy==1.26.1
 openai==2.36.0
 opencv-python==4.13.0.92
 opt_einsum==3.4.0
@@ -59,7 +59,6 @@ PyQt6==6.11.0
 PyQt6-Qt6==6.11.0
 PyQt6_sip==13.11.1
 python-dotenv==1.2.2
-pyttsx3==2.99
 pywin32==311
 requests==2.34.2
 rich==15.0.0
