@@ -12,7 +12,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+def env_list(name, default=""):
+    """Return a comma-separated environment variable as a clean list."""
+    return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
+
+
+# Render sends its public hostname in the Host header.  Keeping this
+# configurable lets preview/custom domains be added without a code change.
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,cse4204-8d-t03-smart-farmer-assistant.onrender.com,.onrender.com",
+)
 
 # Applications
 INSTALLED_APPS = [
@@ -124,7 +134,16 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "apps.users.exceptions.custom_exception_handler",
 }
 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+CORS_ALLOWED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173",
+)
+# Vercel preview and production URLs are generated per deployment.  An
+# explicit CORS_ALLOWED_ORIGINS value remains available for a custom domain.
+CORS_ALLOWED_ORIGIN_REGEXES = env_list(
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    r"^https://([a-z0-9-]+\.)?vercel\.app$",
+)
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "25"))
 

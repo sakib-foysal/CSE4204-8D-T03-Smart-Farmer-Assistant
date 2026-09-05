@@ -1,4 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+// In development Vite proxies /api requests to Django.  In production the
+// frontend is served separately, so requests must go directly to the API.
+// VITE_API_BASE_URL can still override this value for previews or a new API.
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.DEV ? "" : "https://cse4204-8d-t03-smart-farmer-assistant.onrender.com")
+).replace(/\/$/, "");
 
 export interface UserProfile {
   id: string;
