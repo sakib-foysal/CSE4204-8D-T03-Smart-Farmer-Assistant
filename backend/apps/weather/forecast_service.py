@@ -6,11 +6,30 @@ from itertools import groupby
 
 import requests
 from django.core.cache import cache
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 logger = logging.getLogger(__name__)
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 KHULNA = {"latitude": 22.8456, "longitude": 89.5403}
+
+
+def _weather_session():
+    """Create a short-lived client that tolerates transient provider errors."""
+    retry = Retry(
+        total=2,
+        connect=2,
+        read=2,
+        status=2,
+        backoff_factor=0.4,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset(("GET",)),
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session = requests.Session()
+    session.mount("https://", adapter)
+    return session
 
 ALERT_GUIDANCE = {
     "flood": {
@@ -126,7 +145,7 @@ def get_seven_day_forecast(language="bn"):
     if cached:
         return cached
     try:
-        with requests.Session() as session:
+        with _weather_session() as session:
             session.trust_env = False
             response = session.get(FORECAST_URL, params={
                 **KHULNA,

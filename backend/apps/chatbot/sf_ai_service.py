@@ -149,9 +149,9 @@ def _model_id():
 def _request_session():
     """Retry only transient connection/server failures; never bypass TLS validation."""
     retry = Retry(
-        total=2,
-        connect=2,
-        read=2,
+        total=1,
+        connect=1,
+        read=1,
         status=1,
         backoff_factor=0.4,
         status_forcelist=(429, 500, 502, 503, 504),

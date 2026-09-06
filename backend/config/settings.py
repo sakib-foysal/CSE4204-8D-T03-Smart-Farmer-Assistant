@@ -145,5 +145,6 @@ CORS_ALLOWED_ORIGIN_REGEXES = env_list(
     r"^https://([a-z0-9-]+\.)?vercel\.app$",
 )
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
-GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "25"))
+# Keep a complete retry cycle below the browser and Render request limits.
+GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "18"))
 

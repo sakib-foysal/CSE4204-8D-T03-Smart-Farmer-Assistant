@@ -97,9 +97,11 @@ export default function DiseaseDetectionPage() {
     setDetecting(true);
     setAnalysisProgress(2);
     const startedAt = Date.now();
-    const progressTimer = window.setInterval(() => setAnalysisProgress(Math.min(95, Math.max(2, Math.round(((Date.now() - startedAt) / 55000) * 95)))), 400);
+    // A Render instance may need time to wake and the AI service can retry a
+    // transient request. Do not abort before the backend's response budget.
+    const progressTimer = window.setInterval(() => setAnalysisProgress(Math.min(95, Math.max(2, Math.round(((Date.now() - startedAt) / 105000) * 95)))), 400);
     const controller = new AbortController();
-    const requestTimeout = window.setTimeout(() => controller.abort(), 59000);
+    const requestTimeout = window.setTimeout(() => controller.abort(), 110000);
     setFertilizerPlan(null);
     try {
       const analysis = selectedVideo
