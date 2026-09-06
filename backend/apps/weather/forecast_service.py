@@ -1,7 +1,7 @@
 """Live, no-key weather forecast and farmer alert service."""
 
 import logging
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from itertools import groupby
 
 import requests
@@ -12,6 +12,7 @@ from urllib3.util.retry import Retry
 
 logger = logging.getLogger(__name__)
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+MET_NO_FORECAST_URL = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
 KHULNA = {"latitude": 22.8456, "longitude": 89.5403}
 
 
@@ -23,13 +24,83 @@ def _weather_session():
         read=2,
         status=2,
         backoff_factor=0.4,
-        status_forcelist=(429, 500, 502, 503, 504),
+        # Do not retry 429: the provider has already asked us to slow down.
+        status_forcelist=(500, 502, 503, 504),
         allowed_methods=frozenset(("GET",)),
     )
     adapter = HTTPAdapter(max_retries=retry)
     session = requests.Session()
     session.mount("https://", adapter)
     return session
+
+
+def _weather_code_from_met_no(data):
+    """Map MET Norway's textual symbols to the WMO-style UI codes we use."""
+    symbol = ""
+    for period in ("next_1_hours", "next_6_hours", "next_12_hours"):
+        symbol = data.get(period, {}).get("summary", {}).get("symbol_code", "")
+        if symbol:
+            break
+    symbol = symbol.lower()
+    if "thunder" in symbol:
+        return 95
+    if any(term in symbol for term in ("rain", "sleet", "snow")):
+        return 61
+    cloud_cover = data.get("instant", {}).get("details", {}).get("cloud_area_fraction", 0)
+    return 3 if cloud_cover >= 50 else 1 if cloud_cover >= 15 else 0
+
+
+def _met_no_forecast(language):
+    """Use a second public provider if Open-Meteo rate-limits this server."""
+    response = requests.get(
+        MET_NO_FORECAST_URL,
+        params={"lat": KHULNA["latitude"], "lon": KHULNA["longitude"]},
+        headers={"User-Agent": "SmartFarmerAssistant/1.0"},
+        timeout=12,
+    )
+    response.raise_for_status()
+    timeseries = response.json()["properties"]["timeseries"]
+    if not timeseries:
+        raise ValueError("MET Norway returned no forecast data")
+
+    bangladesh_tz = timezone(timedelta(hours=6))
+    days = {}
+    hourly = []
+    for item in timeseries:
+        timestamp = item["time"]
+        local_date = datetime.fromisoformat(timestamp.replace("Z", "+00:00")).astimezone(bangladesh_tz).date().isoformat()
+        data = item["data"]
+        details = data.get("instant", {}).get("details", {})
+        period = next((data[key].get("details", {}) for key in ("next_1_hours", "next_6_hours", "next_12_hours") if key in data), {})
+        rain = float(period.get("precipitation_amount", 0) or 0)
+        rain_probability = int(period.get("probability_of_precipitation", 0) or 0)
+        temperature = float(details.get("air_temperature", 0) or 0)
+        wind_speed = float(details.get("wind_speed", 0) or 0)
+        day = days.setdefault(local_date, {"temperatures": [], "rainfall": 0.0, "rain_probability": 0, "wind_speed": 0.0, "weather_code": 0})
+        day["temperatures"].append(temperature)
+        day["rainfall"] += rain
+        day["rain_probability"] = max(day["rain_probability"], rain_probability)
+        day["wind_speed"] = max(day["wind_speed"], wind_speed)
+        day["weather_code"] = max(day["weather_code"], _weather_code_from_met_no(data))
+        hourly.append({"date": local_date, "time": timestamp, "rain_probability": rain_probability, "rainfall": rain})
+
+    forecast, raw_alerts = [], []
+    for forecast_date, day in list(days.items())[:7]:
+        maximum, minimum = max(day["temperatures"]), min(day["temperatures"])
+        risk, alert_types = _risk_and_alert_types(day["rainfall"], day["wind_speed"], day["weather_code"], maximum)
+        forecast.append({"date": forecast_date, "temperature_max": maximum, "temperature_min": minimum, "rainfall": round(day["rainfall"], 1), "rain_probability": day["rain_probability"], "wind_speed": day["wind_speed"], "weather_code": day["weather_code"], "flood_risk": risk})
+        raw_alerts.extend({"date": forecast_date, "type": kind, "severity": severity} for kind, severity in alert_types)
+
+    current = timeseries[0]
+    current_details = current["data"].get("instant", {}).get("details", {})
+    return {
+        "location": "Khulna, Bangladesh" if language == "en" else "খুলনা, বাংলাদেশ",
+        "updated_at": current["time"],
+        "current": {"temperature": float(current_details.get("air_temperature", 0) or 0), "humidity": int(current_details.get("relative_humidity", 0) or 0), "rainfall": 0.0, "wind_speed": float(current_details.get("wind_speed", 0) or 0), "weather_code": _weather_code_from_met_no(current["data"])},
+        "forecast": forecast,
+        "hourly": hourly,
+        "alerts": group_consecutive_alerts(raw_alerts, language),
+    }
 
 ALERT_GUIDANCE = {
     "flood": {
@@ -159,8 +230,14 @@ def get_seven_day_forecast(language="bn"):
         payload = response.json()
         daily, current, hourly = payload["daily"], payload["current"], payload["hourly"]
     except (requests.RequestException, ValueError, KeyError, TypeError) as exc:
-        logger.warning("Live weather forecast failed: %s", exc)
-        raise WeatherServiceError("লাইভ আবহাওয়ার তথ্য এখন পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।") from exc
+        logger.warning("Open-Meteo forecast failed; trying MET Norway fallback: %s", exc)
+        try:
+            result = _met_no_forecast(language)
+        except (requests.RequestException, ValueError, KeyError, TypeError) as fallback_exc:
+            logger.warning("MET Norway fallback forecast failed: %s", fallback_exc)
+            raise WeatherServiceError("লাইভ আবহাওয়ার তথ্য এখন পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।") from fallback_exc
+        cache.set(cache_key, result, 900)
+        return result
 
     raw_alerts, forecast = [], []
     for index, forecast_date in enumerate(daily["time"]):
