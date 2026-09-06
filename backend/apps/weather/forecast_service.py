@@ -145,8 +145,9 @@ def get_seven_day_forecast(language="bn"):
     if cached:
         return cached
     try:
+        # Keep Requests' normal environment handling. Hosting providers can
+        # supply outbound-network proxy settings through their environment.
         with _weather_session() as session:
-            session.trust_env = False
             response = session.get(FORECAST_URL, params={
                 **KHULNA,
                 "current": "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
