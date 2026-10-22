@@ -142,7 +142,7 @@ def _fallback_farming_answer(question, history=None):
 
 def _model_id():
     """Normalize the provider model ID without changing the user's .env file."""
-    configured = str(getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash")).strip()
+    configured = str(getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash-lite")).strip()
     return configured.lower().removeprefix("models/")
 
 
@@ -375,7 +375,7 @@ def analyze_crop_video(video_file, mime_type, crop_hint=""):
 
 def generate_fertilizer_plan(crop, context="", language="en"):
     response_language = "Bangla" if language == "bn" else "English"
-    prompt = f"""You are a careful Bangladesh agriculture assistant. Create a fertilizer planning guide tailored to the crop or crop-leaf assessment supplied by the user, not a prescription. Return JSON only with keys: crop, fertilizers (array of objects with name, amount, timing), tips (array of strings), disclaimer. Every string value must be in {response_language}; do not mix languages. If the crop name is uncertain, infer the most likely crop from the visual-assessment context and still give a conservative, crop-appropriate guide. Never invent soil-test results and never present exact application rates as universally correct; clearly ask the farmer to confirm dose with a soil test, local agricultural extension officer, and product label. Use simple language."""
+    prompt = f"""You are a Bangladesh agriculture assistant. Create a useful fertilizer guide for ANY crop and disease named in the user's context. Read both crop and disease for every request; do not reuse one fixed fertilizer list for all cases. Select fertilizer products suitable for the named crop, and adapt nutrient advice to the disease (avoid nutrient excesses that can worsen disease). Fertilizer supports crop nutrition; it does not cure viral, bacterial, or fungal infection. The user supplies cultivated area in square feet: every fertilizer amount must be a numeric quantity with a unit, calculated for that exact area, with a clear application timing. Use established Bangladesh crop guidance and state assumptions about crop stage/plant spacing where needed. Do not invent soil test results. If the disease does not have a specific fertilizer treatment, say so, then give that crop's normal crop-stage fertilizer schedule scaled to the area and a brief disease-specific non-fertilizer note. Return JSON only with keys: crop, fertilizers (array of objects with name, amount, timing), tips (array of strings), disclaimer. Every string value must be in {response_language}; do not mix languages. Confirm the dose with a soil test, local agricultural extension officer, and product label. Use simple language."""
     question = f"Crop: {crop}. Farm context: {context or 'not provided'}"
     return _json_response({
         "systemInstruction": {"parts": [{"text": prompt}]},

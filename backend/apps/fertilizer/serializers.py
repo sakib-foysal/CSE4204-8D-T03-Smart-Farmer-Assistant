@@ -15,3 +15,4 @@ class FertilizerGenerateSerializer(serializers.Serializer):
     farm_context = serializers.CharField(max_length=500, required=False, allow_blank=True)
     language = serializers.ChoiceField(choices=["en", "bn"], required=False, default="en")
     disease_id = serializers.UUIDField(required=False, allow_null=True)
+    area_sqft = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0.01)

@@ -322,10 +322,10 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     }),
-  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "", language: "en" | "bn" = "en", disease_id?: string) =>
+  generateFertilizerPlan: (token: string, crop_name: string, farm_context = "", language: "en" | "bn" = "en", disease_id?: string, area_sqft = 1000) =>
     apiRequest<FertilizerPlan>("/api/fertilizer-recommendations/generate/", {
       method: "POST",
       token,
-      body: JSON.stringify({ crop_name, farm_context, language, disease_id }),
+      body: JSON.stringify({ crop_name, farm_context, language, disease_id, area_sqft }),
     }),
 };
